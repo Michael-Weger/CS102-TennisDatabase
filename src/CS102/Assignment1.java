@@ -45,7 +45,7 @@ public class Assignment1 {
 		
 		while(fileScanner.hasNextLine())
 		{
-			String importedData = fileScanner.next();
+			String importedData = fileScanner.nextLine();
 			
 			if(importedData.substring(0, 6).equals("MATCH/"))
 				tennisDatabase.addMatch(importedData, false);
@@ -55,13 +55,13 @@ public class Assignment1 {
 		
 		System.out.println("");
 		System.out.println("---------------------------------------CS102 Tennis Database---------------------------------------");
-		System.out.println("!Help				- Displays this message again.");
-		System.out.println("!Matches			- Displays all matches.");
+		System.out.println("!Help			- Displays this message again.");
+		System.out.println("!Matches		- Displays all matches.");
 		System.out.println("!MatchesByPlayer	- Displays all matches a given player has participated in.");
-		System.out.println("!Players			- Displays all players.");
+		System.out.println("!Players		- Displays all players.");
 		System.out.println("!InsertMatch		- Adds a match to the database.");
 		System.out.println("!InsertPlayer		- Adds a player to the database.");
-		System.out.println("!Exit				- Terminates the program.");
+		System.out.println("!Exit			- Terminates the program.");
 		System.out.println("----------------------------------------------------------------------------------------------------");
 		System.out.println("");
 		
@@ -74,13 +74,13 @@ public class Assignment1 {
 				case("!help"):
 					System.out.println("");
 					System.out.println("---------------------------------------CS102 Tennis Database---------------------------------------");
-					System.out.println("!Help				- Displays this message again.");
-					System.out.println("!Matches			- Displays all matches.");
+					System.out.println("!Help			- Displays this message again.");
+					System.out.println("!Matches		- Displays all matches.");
 					System.out.println("!MatchesByPlayer	- Displays all matches a given player has participated in.");
-					System.out.println("!Players			- Displays all players.");
+					System.out.println("!Players		- Displays all players.");
 					System.out.println("!InsertMatch		- Adds a match to the database.");
 					System.out.println("!InsertPlayer		- Adds a player to the database.");
-					System.out.println("!Exit				- Terminates the program.");
+					System.out.println("!Exit			- Terminates the program.");
 					System.out.println("----------------------------------------------------------------------------------------------------");
 					System.out.println("");
 					break;
@@ -103,7 +103,7 @@ public class Assignment1 {
 					
 				case("!insertmatch"):
 					System.out.println("Enter your match in the following format: PLAYER ID/PLAYER ID/DATE/TOURNAMENET/SET SCORE, SET SCORE");
-					tennisDatabase.addMatch(userScanner.nextLine(), true);
+					tennisDatabase.addMatch("MATCH/" + userScanner.nextLine(), true);
 					break;
 					
 				case("!insertplayer"):
@@ -116,11 +116,13 @@ public class Assignment1 {
 					System.exit(0);
 					break;
 					
+				case("!debug"):
+					break;
+					
 				default:
 					System.out.println(s + " is an unknown command. use !Help to see a list of commands.");
 					break;
 			}
 		}
 	}
-	
 }

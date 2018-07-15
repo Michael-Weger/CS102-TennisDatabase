@@ -43,45 +43,42 @@ public class TennisDatabase {
 		else if(importedMatch[1].equals(importedMatch[2]))
 		{
 			if(userFeedback)
-				System.out.println("A match cannot have two identical player IDs.");
+				System.out.println("Invalid player IDs, a match cannot have two identical player IDs.");
 			return;
 		}
 		// Improper date format
 		else if(importedMatch[3].length() != 8)
 		{
 			if(userFeedback)
-				System.out.println("A date must have 8 digits: YYYYMMDD");
+				System.out.println("Invalid date, a date must have 8 digits: YYYYMMDD");
 			return;
 		}
 		// Too small of a year
 		else if(Integer.parseInt(importedMatch[3].substring(0, 4)) < 1100)
 		{
 			if(userFeedback)
-			{
-				System.out.println("This is an imaginary tennis match as tennis even in it's earliest form was not recorded until the 12th century.");
-				System.out.println("You should really find a historian and let them know about your discovery.");
-			}
+				System.out.println("Invalid date, tennis didn't exist before the 12th century. Tell a historian about your match!");
 			return;
 		}
 		// Too large of a month
 		else if(Integer.parseInt(importedMatch[3].substring(4, 6)) > 12)
 		{
 			if(userFeedback)
-				System.out.println("There are only 12 months in the Gregorian calendar.");
+				System.out.println("Invalid date, there are only 12 months in a year.");
 			return;
 		}
 		// Too large of a date
 		else if(Integer.parseInt(importedMatch[3].substring(6, 8)) > 31)
 		{
 			if(userFeedback)
-				System.out.println("No month in the Gregorian calendar has more than 31 days!");
+				System.out.println("Invalid date, there are no more than 31 days in a month");
 			return;
 		}
 		// Too many or too few sets in a match
-		else if(importedMatch[5].split(",").length < 2 && importedMatch[5].split(",").length > 5)
+		else if(importedMatch[5].split(",").length < 2)
 		{
 			if(userFeedback)
-				System.out.println("A match must contain between 2 and 5 set scores.");
+				System.out.println("Invalid set scores, a match must have at least two sets.");
 			return;
 		}
 		// Actually adding the match
@@ -89,6 +86,9 @@ public class TennisDatabase {
 		{
 			TennisMatch match = new TennisMatch(m);
 			m_MatchContainer.addMatch(match);
+			
+			if(userFeedback)
+				System.out.println("Match successfully added.");
 		}
 	}
 	public void printMatches()
@@ -124,7 +124,7 @@ public class TennisDatabase {
 			m_ArraySize++;
 			selectionSort();
 		}
-				
+		
 		public void printMatches()
 		{
 			if(m_ArraySize == 0)

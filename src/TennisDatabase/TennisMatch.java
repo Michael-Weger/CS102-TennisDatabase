@@ -1,5 +1,13 @@
 package TennisDatabase;
 
+import java.util.jar.Pack200;
+
+/**
+ * A class used to encapsulate data regarding tennis matches
+ * 
+ * @author Michael Weger
+ *
+ */
 public class TennisMatch {
 
 	private String m_Player1;
@@ -20,7 +28,7 @@ public class TennisMatch {
 		m_Tournament 	= importedMatch[4];
 		m_Results 		= importedMatch[5];
 		
-		m_Winner = winnerStringResult(determineMatchWinnerRecursive(m_Results.split(",")));
+		m_Winner = determineWinner();
 	}
 	
 	public TennisMatch(String[] match)
@@ -31,32 +39,61 @@ public class TennisMatch {
 		m_Tournament 	= match[3];
 		m_Results 		= match[4];
 		
-		m_Winner = winnerStringResult(determineMatchWinnerRecursive(m_Results.split(",")));
+		m_Winner = determineWinner();
 	}
 	
-	public boolean hasPlayer(String UUID)
+	/**
+	 * Determines if a given player is in this match
+	 * 
+	 * @param UPID the unique ID of a player
+	 * @return a boolean indicating if the player is player 1 or player 2.
+	 */
+	public boolean hasPlayer(String UPID)
 	{
-		return m_Player1.equals(UUID) || m_Player2.equals(UUID);
+		return m_Player1.equals(UPID) || m_Player2.equals(UPID);
 	}
 	
+	/**
+	 * 
+	 * @return The date of the match as YYYYMMDD
+	 */
 	public int getDate()
 	{
 		return Integer.parseInt(m_Date);
 	}
 	
+	/**
+	 * Returns this match as a string
+	 */
 	public String toString()
 	{	
+		// Returns PID, PID, DATE, TOURNAMENT NAME, SET SCORE,SET SCORE...
 		return m_Player1 + ", " + m_Player2 + ", " + m_Date + ", " + m_Tournament + ", " + m_Results; 
 	}
 	
-	private String winnerStringResult(int i)
+	/**
+	 * Takes the resulting value of the determineMatchWinnerRecursive method and returns the player ID of the winner.
+	 * 
+	 * @return returns the unique player ID of the winner
+	 */
+	private String determineWinner()
 	{
+		// Get the numeric "winner" value
+		int i = determineMatchWinnerRecursive(m_Results.split(","));
+		
 		if(i > 0)
 			return m_Player1;
 		else
 			return m_Player2;
 	}
 	
+	/**
+	 * Takes the sets of the match and determines the winner of each set. Each time P1 wins the result is incremented by 1 and for every P2 win the
+	 * result is decreased by 1. If the final result is positive P1 won the set, if negative P2 won.
+	 * 
+	 * @param sets takes an array of the set scores of the match: SET SCORE,SET SCORE
+	 * @return
+	 */
 	private int determineMatchWinnerRecursive(String[] sets)
 	{
 		// Base case. If there's nothing left in the array then there's nothing to process.
@@ -83,11 +120,18 @@ public class TennisMatch {
 			return determineMatchWinnerRecursive(smallSets);
 	}
 	
-	// Returns the score of the last set of the match as an integer array
+	/**
+	 * Unpacks a single set for analysis by determineMatchWinnerRecursive
+	 * 
+	 * @param sets A string array of the set scores split at the comma.
+	 * @return A size 2 array with the two digits of the set being analyzed
+	 */
 	private int[] unpackSet(String[] sets)
 	{
+		// Take the last set
 		String[] lastSet = sets[sets.length-1].split("-");
 		
+		// Put its individual numeric values into a size two array
 		int[] setScores = new int[2];
 		setScores[0] = Integer.parseInt(lastSet[0]);
 		setScores[1] = Integer.parseInt(lastSet[1]);

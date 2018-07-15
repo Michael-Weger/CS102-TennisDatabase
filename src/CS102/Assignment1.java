@@ -6,6 +6,12 @@ import java.util.Scanner;
 
 import TennisDatabase.TennisDatabase;
 
+/**
+ * Main class of the project
+ * 
+ * @author Michael Weger
+ *
+ */
 public class Assignment1 {
 	
 	static TennisDatabase tennisDatabase;
@@ -18,6 +24,7 @@ public class Assignment1 {
 		userScanner = new Scanner(System.in);
 		File dataFile = new File(args[0]);
 		
+		// Attempt to load the data file 
 		if(!dataFile.exists())
 		{
 			System.out.println("File not found, terminating program.");
@@ -43,16 +50,23 @@ public class Assignment1 {
 			}
 		}
 		
+		// Import all valid data from the file
 		while(fileScanner.hasNextLine())
 		{
 			String importedData = fileScanner.nextLine();
 			
-			if(importedData.substring(0, 6).equals("MATCH/"))
-				tennisDatabase.addMatch(importedData, false);
-			else if(importedData.substring(0, 7).equals("PLAYER/"))
-				tennisDatabase.addPlayer(importedData, false);
+			// Make sure the line is long enough to determine if its a match or a player before continuing the validity test
+			if(importedData.length() < 7)
+			{
+				// Determine if the given line of text is for a match or a player
+				if(importedData.substring(0, 6).equals("MATCH/"))
+					tennisDatabase.addMatch(importedData, false);
+				else if(importedData.substring(0, 7).equals("PLAYER/"))
+					tennisDatabase.addPlayer(importedData, false);
+			}
 		}
 		
+		// Display all commands for the user
 		System.out.println("");
 		System.out.println("---------------------------------------CS102 Tennis Database---------------------------------------");
 		System.out.println("!Help			- Displays this message again.");
@@ -66,9 +80,12 @@ public class Assignment1 {
 		System.out.println("");
 		
 		
+		// Loop to check for user input until the program terminates
 		while(true)
 		{
 			String s = userScanner.nextLine();
+			
+			// Change all input to lower case for easier use
 			switch(s.toLowerCase())
 			{
 				case("!help"):

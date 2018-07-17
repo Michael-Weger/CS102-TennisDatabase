@@ -1,6 +1,7 @@
 package TennisDatabase;
 
-import java.util.jar.Pack200;
+import TennisDatabase.TennisPlayer;
+import CS102.Date;
 
 /**
  * A class used to encapsulate data regarding tennis matches
@@ -8,58 +9,102 @@ import java.util.jar.Pack200;
  * @author Michael Weger
  *
  */
-public class TennisMatch {
+public class TennisMatch implements TennisMatchInterface {
 
-	private String m_Player1;
-	private String m_Player2;
-	private String m_Date;
-	private String m_Tournament;
-	private String m_Results;
-	private String m_Winner;
+	// TODO Store player reference rather than unique ID
 	
-	public TennisMatch(String match)
+	private TennisPlayer m_Player1;	// The first player of the match
+	private TennisPlayer m_Player2;	// The second player of the match
+	private String m_Player1ID; 	// Unique ID of player 1
+	private String m_Player2ID; 	// Unique ID of player 2
+	private Date m_Date;			// The date of the match
+	private String m_Tournament; 	// The tournament in which the match took place
+	private String m_MatchScore;	// The scores of each set of the match
+	private int m_Winner;			// The winner of the match
+	
+	/**
+	 * 
+	 * @param m A string which defines the match MATCH/PLAYER 1/PLAYER 2/DATE/TOURNAMENET/RESULTS
+	 */
+	public TennisMatch(String m)
 	{
-		String[] importedMatch = new String[6];
-		importedMatch = match.split("/");
+		String[] match = new String[6];
+		match = m.split("/");
 		
-		m_Player1 		= importedMatch[1];
-		m_Player2 		= importedMatch[2];
-		m_Date 			= importedMatch[3];
-		m_Tournament 	= importedMatch[4];
-		m_Results 		= importedMatch[5];
+		m_Player1ID 	= match[1];
+		m_Player2ID 	= match[2];
+		m_Date 			= new Date(match[3], '-');
+		m_Tournament 	= match[4];
+		m_MatchScore 	= match[5];
 		
-		m_Winner = determineWinner();
+		// TODO check set validity
+		m_Winner 		= determineWinnerRecursive(m_MatchScore.split(","));
 	}
 	
+	/**
+	 * 
+	 * @param match An array which contains the following strings which define the match PLAYER 1/PLAYER 2/DATE/TOURNAMENET/RESULTS
+	 */
 	public TennisMatch(String[] match)
 	{
-		m_Player1 		= match[0];
-		m_Player2 		= match[1];
-		m_Date 			= match[2];
+		m_Player1ID 	= match[0];
+		m_Player2ID 	= match[1];
+		m_Date 			= new Date(match[2], '-');
 		m_Tournament 	= match[3];
-		m_Results 		= match[4];
+		m_MatchScore 	= match[4];
 		
-		m_Winner = determineWinner();
+		// TODO check set validity
+		m_Winner 		= determineWinnerRecursive(m_MatchScore.split(","));
 	}
 	
-	/**
-	 * Determines if a given player is in this match
-	 * 
-	 * @param UPID the unique ID of a player
-	 * @return a boolean indicating if the player is player 1 or player 2.
-	 */
-	public boolean hasPlayer(String UPID)
+	public String getPlayer1ID()
 	{
-		return m_Player1.equals(UPID) || m_Player2.equals(UPID);
+		return m_Player1ID;
 	}
 	
-	/**
-	 * 
-	 * @return The date of the match as YYYYMMDD
-	 */
-	public int getDate()
+	public String getPlayer2ID()
 	{
-		return Integer.parseInt(m_Date);
+		return m_Player2ID;
+	}
+	
+	public String getDateYYYYMMDD()
+	{
+		return m_Date.getYYYYMMDD();
+	}
+	
+	public int getDateYear()
+	{
+		return m_Date.getYearNumeric();
+	}
+	
+	public int getDateMonth()
+	{
+		return m_Date.getMonthNumeric();
+	}
+	
+	public int getDateDay()
+	{
+		return m_Date.getDayNumeric();
+	}
+	
+	public int getDateNumeric()
+	{
+		return m_Date.getDateNumeric();
+	}
+	
+	public String getTournament()
+	{
+		return m_Tournament;
+	}
+	
+	public String getMatchScore()
+	{
+		return m_MatchScore;
+	}
+	
+	public int getWinner()
+	{
+		return m_Winner;
 	}
 	
 	/**
@@ -68,23 +113,27 @@ public class TennisMatch {
 	public String toString()
 	{	
 		// Returns PID, PID, DATE, TOURNAMENT NAME, SET SCORE,SET SCORE...
-		return m_Player1 + ", " + m_Player2 + ", " + m_Date + ", " + m_Tournament + ", " + m_Results; 
+		return m_Player1ID + ", " + m_Player2ID + ", " + m_Date.getYYYYMMDD() + ", " + m_Tournament + ", " + m_MatchScore; 
 	}
 	
 	/**
-	 * Takes the resulting value of the determineMatchWinnerRecursive method and returns the player ID of the winner.
+	 * Determines if a given player is in this match
 	 * 
-	 * @return returns the unique player ID of the winner
+	 * @param playerID the unique ID of a player
+	 * @return a boolean indicating if the player is player 1 or player 2.
 	 */
-	private String determineWinner()
+	public boolean hasPlayer(String playerID)
 	{
-		// Get the numeric "winner" value
-		int i = determineMatchWinnerRecursive(m_Results.split(","));
-		
-		if(i > 0)
-			return m_Player1;
-		else
-			return m_Player2;
+		return m_Player1ID.equals(playerID) || m_Player2ID.equals(playerID);
+	}
+	
+	// TODO check to see if match score is valid and remove invalid sets
+	// Every even character should be numeric
+	// Odd characters should alternate between hyphens and commas
+	// It should end on a numeric character following a hyphen
+	public boolean checkSetScores()
+	{
+		return true;
 	}
 	
 	/**
@@ -94,7 +143,7 @@ public class TennisMatch {
 	 * @param sets takes an array of the set scores of the match: SET SCORE,SET SCORE
 	 * @return
 	 */
-	private int determineMatchWinnerRecursive(String[] sets)
+	private int determineWinnerRecursive(String[] sets)
 	{
 		// Base case. If there's nothing left in the array then there's nothing to process.
 		if(sets.length == 0)
@@ -113,11 +162,11 @@ public class TennisMatch {
 		// P1 wins = +1 | P2 wins = -1 | Draw = 0
 		// If the final integer value is positive P1 won the match, if its negative P2 won.
 		if(scores[0] > scores[1])
-			return determineMatchWinnerRecursive(smallSets) + 1;
+			return determineWinnerRecursive(smallSets) + 1;
 		else if(scores[0] < scores[1])
-			return determineMatchWinnerRecursive(smallSets) - 1;
+			return determineWinnerRecursive(smallSets) - 1;
 		else
-			return determineMatchWinnerRecursive(smallSets);
+			return determineWinnerRecursive(smallSets);
 	}
 	
 	/**
@@ -137,5 +186,18 @@ public class TennisMatch {
 		setScores[1] = Integer.parseInt(lastSet[1]);
 		
 		return setScores;
+	}
+
+	@Override
+	public int compareTo(TennisMatch other) 
+	{
+		if(m_Date.getDateNumeric() > other.getDateNumeric())
+			return 1;
+		
+		else if(m_Date.getDateNumeric() < other.getDateNumeric())
+			return -1;
+		
+		else
+			return 0;
 	}
 }

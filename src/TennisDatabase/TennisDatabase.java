@@ -10,9 +10,36 @@ public class TennisDatabase {
 		m_MatchContainer = new TennisMatchesContainer();
 		// m_PlayerContainer = new TennisPlayersContainer();
 	}
-	public void addPlayer(String s, boolean userFeedback)
+	public void addPlayer(String p, boolean userFeedback)
 	{
+		String[] importedPlayer = p.split("/");
 		
+		// Test for all conditions where p would be an invalid player
+		
+		// Invalid format
+		if(importedPlayer.length != 6)
+		{
+			if(userFeedback)
+				System.out.println("Invalid player format. Make sure there are no missing or extraneous fields.");
+				return;
+		}
+		else if(importedPlayer[1].length() != 5)
+		{
+			if(userFeedback)
+				System.out.println("Invalid player ID, player IDs must be 5 digits and contain only alphanumeric characters.");
+			return;
+		}
+		else if(importedPlayer[4].length() != 4)
+		{
+			if(userFeedback)
+				System.out.println("A valid birth year must have four digits.");
+			return;
+		}
+		else
+		{
+			System.out.println("Successfully added player to the database!");
+			//m_PlayerContainer.addPlayer(new TennisPlayer(p));
+		}
 	}
 	public String getPlayerNameByPlayerID(String playerID)
 	{
@@ -117,6 +144,16 @@ public class TennisDatabase {
 	
 	
 	
+	
+	private class TennisPlayersContainer {
+			
+	}
+	
+	
+	
+	
+	
+	
 	/**
 	 * Stores and manipulates all tennis matches
 	 * 
@@ -170,7 +207,9 @@ public class TennisDatabase {
 			}
 			// Print all matches
 			for(TennisMatch m : m_Array)
-				System.out.println(m.toString());
+			{
+				printMatchWithPlayerNames(m);
+			}
 		}
 		
 		/**
@@ -178,36 +217,45 @@ public class TennisDatabase {
 		 * 
 		 * @param playerID The player ID of the player whose matches will be printed
 		 */
-		// TODO this is ugly
 		public void printMatches(String playerID)
 		{
 			boolean noMatches = true;
+			
+			if(m_ArraySize == 0)
+			{
+				System.out.println("There are currently no matches in the database.");
+				return;
+			}
 			
 			for(TennisMatch m : m_Array)
 			{
 				if(m.hasPlayer(playerID))
 				{
 					noMatches = false;
-					String[] split = m.toString().split(", ");
-					
-					// Create full name
-					split[0] = getPlayerNameByPlayerID(split[0]);
-					split[1] = getPlayerNameByPlayerID(split[1]);
-					
-					// Reformat date YYYY-MM-DD
-					split[2] = split[2].substring(0, 4) + "-" + split[2].substring(4, 6) + "-" + split[2].substring(6, 8);
-					
-					// Final String: FIRST LAST, YYYY-MM-DD, TOURNAMENT, SET SCORES
-					String s = split[0] + " " + split[1] + ", " + split[2] + ", " + split[3] + ", " + split[4];
-					
-					// Print the final string
-					System.out.println(s);
+					printMatchWithPlayerNames(m);
 				}
 			}
 			
 			// If no matches were ever printed then let the player know their player ID was likely invalid.
 			if(noMatches)
 				System.out.println("No matches found for player. Did you enter a valid player ID?");
+		}
+		
+		/**
+		 * @param m The match which will be printed
+		 */
+		private void printMatchWithPlayerNames(TennisMatch m)
+		{
+			String[] split = m.toString().split(", ");
+			
+			// Create full name
+			split[0] = getPlayerNameByPlayerID(split[0]);
+			split[1] = getPlayerNameByPlayerID(split[1]);
+			
+			// Final String: FIRST LAST, FIRST LAST, YYYY-MM-DD, TOURNAMENT, SET SCORES
+			String s = split[0] + " " + split[1] + ", " + split[2] + ", " + split[3] + ", " + split[4];
+			
+			System.out.println(s);
 		}
 		
 		/**
@@ -242,7 +290,7 @@ public class TennisDatabase {
 				int minimumIndex = i;
 				for(int j = i+1; j < m_ArraySize; j++)
 				{
-					if(m_Array[j].getDate() > m_Array[minimumIndex].getDate())
+					if(m_Array[j].compareTo(m_Array[minimumIndex]) == 1)
 					{
 						minimumIndex = j;
 					}

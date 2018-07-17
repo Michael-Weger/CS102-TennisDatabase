@@ -18,6 +18,11 @@ public class Assignment1 {
 	static Scanner fileScanner;
 	static Scanner userScanner;
 	
+	/**
+	 * Loads a given file and stores all information on matches and players then waits for user input
+	 * 
+	 * @param args the path to the text file containing data on matches and players
+	 */
 	public static void main(String args[])
 	{
 		tennisDatabase = new TennisDatabase();
@@ -51,19 +56,38 @@ public class Assignment1 {
 		}
 		
 		// Import all valid data from the file
+		
 		while(fileScanner.hasNextLine())
 		{
 			String importedData = fileScanner.nextLine();
 			
 			// Make sure the line is long enough to determine if its a match or a player before continuing the validity test
-			if(importedData.length() < 7)
+			if(importedData.length() > 7)
 			{
-				// Determine if the given line of text is for a match or a player
-				if(importedData.substring(0, 6).equals("MATCH/"))
-					tennisDatabase.addMatch(importedData, false);
-				else if(importedData.substring(0, 7).equals("PLAYER/"))
+				// Add only players to the database first
+				if(importedData.substring(0, 7).equals("PLAYER/"))
 					tennisDatabase.addPlayer(importedData, false);
 			}
+		}
+		
+		// Resets the position of the file scanner to the top of the file by creating a new instance
+		try 
+		{
+			fileScanner = new Scanner(dataFile);
+		} 
+		catch (FileNotFoundException e) 
+		{
+			e.printStackTrace();
+		}
+		
+		// Add matches now that players have been added to the database
+		while(fileScanner.hasNext())
+		{
+			String importedData = fileScanner.next();
+			
+			if(importedData.length() > 6)
+				if(importedData.substring(0, 6).equals("MATCH/"))
+					tennisDatabase.addMatch(importedData, false);
 		}
 		
 		// Display all commands for the user

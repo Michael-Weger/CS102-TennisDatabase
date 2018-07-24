@@ -22,13 +22,13 @@ public class TennisPlayer {
 		m_BirthYear = player[5];
 	}
 	
-	public TennisPlayer(String[] importedPlayer)
+	public TennisPlayer(String[] player)
 	{
-		m_PlayerID = importedPlayer[0];
-		m_FirstName = importedPlayer[1];
-		m_LastName = importedPlayer[2];
-		m_Nationality = importedPlayer[3];
-		m_BirthYear = importedPlayer[4];
+		m_PlayerID 		= player[0];
+		m_FirstName 	= player[1];
+		m_LastName 		= player[2];
+		m_Nationality 	= player[3];
+		m_BirthYear 	= player[4];
 	}
 	
 	public String getPlayerID()

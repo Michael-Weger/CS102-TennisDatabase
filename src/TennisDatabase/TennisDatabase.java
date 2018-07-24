@@ -117,7 +117,8 @@ public class TennisDatabase {
 		// Actually adding the match
 		else
 		{
-			TennisMatch match = new TennisMatch(m);
+			// TODO
+			TennisMatch match = new TennisMatch(m, null, null);
 			m_MatchContainer.addMatch(match);
 			
 			if(userFeedback)
@@ -147,15 +148,36 @@ public class TennisDatabase {
 	
 	private class TennisPlayersContainer {
 			
+		private TennisPlayerContainerNode m_Head;
+		private TennisPlayerContainerNode m_Tail;
+		private int m_NumberNodes;
+		
+		
+		
+		
+		private class TennisPlayerContainerNode {
+			
+			private TennisPlayerContainerNode m_Next;
+			private TennisPlayerContainerNode m_Previous;
+			private TennisPlayer m_Player;
+			
+			public TennisPlayerContainerNode(TennisPlayer player, TennisPlayerContainerNode next, TennisPlayerContainerNode previous)
+			{
+				this.m_Player = player;
+				this.m_Next = next;
+				this.m_Previous = previous;
+			}
+			public TennisPlayerContainerNode(TennisPlayer player)
+			{
+				this.m_Player = player;
+				this.m_Next = null;
+				this.m_Previous = null;
+			}
+		}
 	}
 	
-	
-	
-	
-	
-	
 	/**
-	 * Stores and manipulates all tennis matches
+	 * Stores tennis matches in a dynamically sized array
 	 * 
 	 * @author Michael Weger
 	 *
@@ -166,13 +188,13 @@ public class TennisDatabase {
 		private TennisMatch[] m_Array;
 		
 		// Tracks number of items in the array
-		private int m_ArraySize;
+		private int m_NumItems;
 		
 		public TennisMatchesContainer()
 		{
 			// Create an array and a variable to track how many items are in the array at any given time
-			m_ArraySize = 0;
-			m_Array = new TennisMatch[5];
+			m_NumItems = 0;
+			m_Array = new TennisMatch[20];
 		}
 		
 		/**
@@ -183,13 +205,13 @@ public class TennisDatabase {
 		public void addMatch(TennisMatch match)
 		{	
 			// Resize the array if there is no room
-			if(m_Array.length < m_ArraySize + 1)
+			if(m_Array.length < m_NumItems + 1)
 				resizeArray();
 			
 			// Add the match
-			m_Array[m_ArraySize] = match;
+			m_Array[m_NumItems] = match;
 			// Increment our array size variable since we have added another match to the array
-			m_ArraySize++;
+			m_NumItems++;
 			// Sort the array using our highly inefficient selection sort garbage
 			selectionSort();
 		}
@@ -200,7 +222,7 @@ public class TennisDatabase {
 		public void printMatches()
 		{
 			// Provide feedback to the user if there arent any matches
-			if(m_ArraySize == 0)
+			if(m_NumItems == 0)
 			{
 				System.out.println("There are currently no matches in the database.");
 				return;
@@ -208,7 +230,7 @@ public class TennisDatabase {
 			// Print all matches
 			for(TennisMatch m : m_Array)
 			{
-				printMatchWithPlayerNames(m);
+				System.out.println(m);
 			}
 		}
 		
@@ -221,7 +243,7 @@ public class TennisDatabase {
 		{
 			boolean noMatches = true;
 			
-			if(m_ArraySize == 0)
+			if(m_NumItems == 0)
 			{
 				System.out.println("There are currently no matches in the database.");
 				return;
@@ -232,7 +254,7 @@ public class TennisDatabase {
 				if(m.hasPlayer(playerID))
 				{
 					noMatches = false;
-					printMatchWithPlayerNames(m);
+					System.out.println(m);
 				}
 			}
 			
@@ -242,32 +264,15 @@ public class TennisDatabase {
 		}
 		
 		/**
-		 * @param m The match which will be printed
-		 */
-		private void printMatchWithPlayerNames(TennisMatch m)
-		{
-			String[] split = m.toString().split(", ");
-			
-			// Create full name
-			split[0] = getPlayerNameByPlayerID(split[0]);
-			split[1] = getPlayerNameByPlayerID(split[1]);
-			
-			// Final String: FIRST LAST, FIRST LAST, YYYY-MM-DD, TOURNAMENT, SET SCORES
-			String s = split[0] + " " + split[1] + ", " + split[2] + ", " + split[3] + ", " + split[4];
-			
-			System.out.println(s);
-		}
-		
-		/**
 		 * Allocates memory for an additional index in the array
 		 */
 		private void resizeArray()
 		{
 			// Create a new array with size n+1 to fit the new item
-			TennisMatch[] resizedArray = new TennisMatch[m_ArraySize + 1];
+			TennisMatch[] resizedArray = new TennisMatch[m_Array.length * 2];
 			
 			// Move all items from the previous array to the new array
-			for(int i = 0; i < m_ArraySize; i++)
+			for(int i = 0; i < m_NumItems; i++)
 			{
 				resizedArray[i] = m_Array[i];
 			}
@@ -285,10 +290,10 @@ public class TennisDatabase {
 			// than the assumed minimum at the current starting position. If the match at j is more recent then
 			// Swap the matches at the minimum index and j. Once the algorithm iterates over the 
 			// Entire array the array should be sorted.
-			for(int i = 0; i < m_ArraySize; i++)
+			for(int i = 0; i < m_NumItems; i++)
 			{
 				int minimumIndex = i;
-				for(int j = i+1; j < m_ArraySize; j++)
+				for(int j = i+1; j < m_NumItems; j++)
 				{
 					if(m_Array[j].compareTo(m_Array[minimumIndex]) == 1)
 					{

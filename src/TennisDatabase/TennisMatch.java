@@ -10,13 +10,9 @@ import CS102.Date;
  *
  */
 public class TennisMatch implements TennisMatchInterface {
-
-	// TODO Store player reference rather than unique ID
 	
 	private TennisPlayer m_Player1;	// The first player of the match
 	private TennisPlayer m_Player2;	// The second player of the match
-	private String m_Player1ID; 	// Unique ID of player 1
-	private String m_Player2ID; 	// Unique ID of player 2
 	private Date m_Date;			// The date of the match
 	private String m_Tournament; 	// The tournament in which the match took place
 	private String m_MatchScore;	// The scores of each set of the match
@@ -26,85 +22,91 @@ public class TennisMatch implements TennisMatchInterface {
 	 * 
 	 * @param m A string which defines the match MATCH/PLAYER 1/PLAYER 2/DATE/TOURNAMENET/RESULTS
 	 */
-	public TennisMatch(String m)
+	public TennisMatch(String m, TennisPlayer player1, TennisPlayer player2)
 	{
 		String[] match = new String[6];
 		match = m.split("/");
 		
-		m_Player1ID 	= match[1];
-		m_Player2ID 	= match[2];
-		m_Date 			= new Date(match[3], '-');
-		m_Tournament 	= match[4];
-		m_MatchScore 	= match[5];
+		this.m_Player1 		= player1;
+		this.m_Player2 		= player2;
+		this.m_Date 			= new Date(match[3], '-');
+		this.m_Tournament 	= match[4];
+		this.m_MatchScore 	= match[5];
 		
-		// TODO check set validity
-		m_Winner 		= determineWinnerRecursive(m_MatchScore.split(","));
+		if(!checkSetScores(this.m_MatchScore))
+			this.m_MatchScore = "Invalid";
+		
+		this.m_Winner = determineWinnerRecursive(this.m_MatchScore, 0);
+		// m_Winner 		= determineWinnerRecursive(m_MatchScore.split(","));
 	}
 	
 	/**
 	 * 
 	 * @param match An array which contains the following strings which define the match PLAYER 1/PLAYER 2/DATE/TOURNAMENET/RESULTS
 	 */
-	public TennisMatch(String[] match)
+	public TennisMatch(String[] match, TennisPlayer player1, TennisPlayer player2)
 	{
-		m_Player1ID 	= match[0];
-		m_Player2ID 	= match[1];
-		m_Date 			= new Date(match[2], '-');
-		m_Tournament 	= match[3];
-		m_MatchScore 	= match[4];
+		this.m_Player1 		= player1;
+		this.m_Player2 		= player2;
+		this.m_Date 			= new Date(match[2], '-');
+		this.m_Tournament 	= match[3];
+		this.m_MatchScore 	= match[4];
 		
-		// TODO check set validity
-		m_Winner 		= determineWinnerRecursive(m_MatchScore.split(","));
+		if(!checkSetScores(m_MatchScore))
+			this.m_MatchScore = "Invalid";
+		
+		this.m_Winner = determineWinnerRecursive(this.m_MatchScore, 0);
+		// this.m_Winner 		= determineWinnerRecursive(this.m_MatchScore.split(","));
 	}
 	
 	public String getPlayer1ID()
 	{
-		return m_Player1ID;
+		return this.m_Player1.getPlayerID();
 	}
 	
 	public String getPlayer2ID()
 	{
-		return m_Player2ID;
+		return this.m_Player2.getPlayerID();
 	}
 	
 	public String getDateYYYYMMDD()
 	{
-		return m_Date.getYYYYMMDD();
+		return this.m_Date.getYYYYMMDD();
 	}
 	
 	public int getDateYear()
 	{
-		return m_Date.getYearNumeric();
+		return this.m_Date.getYearNumeric();
 	}
 	
 	public int getDateMonth()
 	{
-		return m_Date.getMonthNumeric();
+		return this.m_Date.getMonthNumeric();
 	}
 	
 	public int getDateDay()
 	{
-		return m_Date.getDayNumeric();
+		return this.m_Date.getDayNumeric();
 	}
 	
 	public int getDateNumeric()
 	{
-		return m_Date.getDateNumeric();
+		return this.m_Date.getDateNumeric();
 	}
 	
 	public String getTournament()
 	{
-		return m_Tournament;
+		return this.m_Tournament;
 	}
 	
 	public String getMatchScore()
 	{
-		return m_MatchScore;
+		return this.m_MatchScore;
 	}
 	
 	public int getWinner()
 	{
-		return m_Winner;
+		return this.m_Winner;
 	}
 	
 	/**
@@ -113,88 +115,119 @@ public class TennisMatch implements TennisMatchInterface {
 	public String toString()
 	{	
 		// Returns PID, PID, DATE, TOURNAMENT NAME, SET SCORE,SET SCORE...
-		return m_Player1ID + ", " + m_Player2ID + ", " + m_Date.getYYYYMMDD() + ", " + m_Tournament + ", " + m_MatchScore; 
+		return this.m_Player1.getFullName() + ", " + this.m_Player2.getFullName() + ", " + this.m_Date.getYYYYMMDD() + ", " + this.m_Tournament + ", " + this.m_MatchScore; 
 	}
 	
 	/**
 	 * Determines if a given player is in this match
 	 * 
 	 * @param playerID the unique ID of a player
-	 * @return a boolean indicating if the player is player 1 or player 2.
+	 * @return hasPlayer boolean indicating if the player is player 1 or player 2.
 	 */
 	public boolean hasPlayer(String playerID)
 	{
-		return m_Player1ID.equals(playerID) || m_Player2ID.equals(playerID);
+		return this.m_Player1.equals(playerID) || this.m_Player2.equals(playerID);
 	}
 	
-	// TODO check to see if match score is valid and remove invalid sets
-	// Every even character should be numeric
-	// Odd characters should alternate between hyphens and commas
-	// It should end on a numeric character following a hyphen
-	public boolean checkSetScores()
+	/**
+	 * Determines if a given match score is valid
+	 * 
+	 * @param s The string to check
+	 * @return isValid A boolean which is either true or false depending on if the string is valid or not
+	 */
+	private boolean checkSetScores(String s)
 	{
+		boolean wasHyphen = false;
+		int length = s.length();
+		char c;
+		
+		// Too short to be a valid set
+		if(length < 3)
+			return false;
+		
+		// Last set ends short
+		if(!Character.isDigit(s.charAt(length-1)) || s.charAt(length - 2) != '-')
+			return false;
+		
+		// If the set isn't the pattern... numeric hyphen numeric comma... then it is invalid
+		for(int i = 0; i < length; i++)
+		{
+			c = s.charAt(i);
+			
+			// Check even indices for numbers
+			if(i == 0 || i % 2 == 0)
+			{
+				if(!Character.isDigit(c))
+					return false;
+			}
+			// Check odd indices for hyphens and commas
+			else if(i % 2 != 0)
+			{
+				if(c != '-' && !wasHyphen)
+					return false;
+
+				else if(c != ',' && wasHyphen)
+					return false;
+				
+				// Update the boolean to know whether the next odd char should be a hyphen or comma
+				if(c == '-')
+					wasHyphen = true;
+				else
+					wasHyphen = false;
+			}
+		}
 		return true;
 	}
 	
 	/**
-	 * Takes the sets of the match and determines the winner of each set. Each time P1 wins the result is incremented by 1 and for every P2 win the
-	 * result is decreased by 1. If the final result is positive P1 won the set, if negative P2 won.
 	 * 
-	 * @param sets takes an array of the set scores of the match: SET SCORE,SET SCORE
-	 * @return
+	 * @param s The string which represents the match
+	 * @param i The index at which to check for the first value of a given set
+	 * @return An integer representing the player who won. Positive = P1, Negative = P2, 0 = Invalid (A draw is invalid).
 	 */
-	private int determineWinnerRecursive(String[] sets)
+	private int determineWinnerRecursive(String s, int i)
 	{
-		// Base case. If there's nothing left in the array then there's nothing to process.
-		if(sets.length == 0)
+		// Invalid string
+		if(s.equals("Invalid"))
 			return 0;
 		
-		// Unpack our sets to make them easier to process and have this function slightly cleaner
-		int[] scores = unpackSet(sets);
+		// Exceeds length
+		if(i + 2 >= s.length())
+			return 0;
 		
-		// Shrink the initial array to move toward the base case
-		String[] smallSets = new String[sets.length-1];
+		// Get the integers here to make later code easier to read
+		int player1Score = s.charAt(i);
+		int player2Score = s.charAt(i + 2);
 		
-		// Move the content of the old array into the new one
-		for(int i = 0; i < sets.length - 1; i++)
-			smallSets[i] = sets[i];
-		
-		// P1 wins = +1 | P2 wins = -1 | Draw = 0
-		// If the final integer value is positive P1 won the match, if its negative P2 won.
-		if(scores[0] > scores[1])
-			return determineWinnerRecursive(smallSets) + 1;
-		else if(scores[0] < scores[1])
-			return determineWinnerRecursive(smallSets) - 1;
+		// Last operation
+		if(i + 2 == s.length())
+		{	
+			if(player1Score > player2Score)
+				return 1;
+			else if(player1Score < player2Score)
+				return -1;
+			else
+				return 0;
+		}
+		// Checks who won the set and advances to the next set
 		else
-			return determineWinnerRecursive(smallSets);
-	}
-	
-	/**
-	 * Unpacks a single set for analysis by determineMatchWinnerRecursive
-	 * 
-	 * @param sets A string array of the set scores split at the comma.
-	 * @return A size 2 array with the two digits of the set being analyzed
-	 */
-	private int[] unpackSet(String[] sets)
-	{
-		// Take the last set
-		String[] lastSet = sets[sets.length-1].split("-");
-		
-		// Put its individual numeric values into a size two array
-		int[] setScores = new int[2];
-		setScores[0] = Integer.parseInt(lastSet[0]);
-		setScores[1] = Integer.parseInt(lastSet[1]);
-		
-		return setScores;
+		{
+			if(player1Score > player2Score)
+				return 1 + determineWinnerRecursive(s, i + 4);
+			else if(player1Score < player2Score)
+				return -1 + determineWinnerRecursive(s, i + 4);
+			else
+				return 0 + determineWinnerRecursive(s, i + 4);
+		}
 	}
 
 	@Override
 	public int compareTo(TennisMatch other) 
 	{
-		if(m_Date.getDateNumeric() > other.getDateNumeric())
+		if(this.m_Date.getDateNumeric() > other.getDateNumeric())
 			return 1;
 		
-		else if(m_Date.getDateNumeric() < other.getDateNumeric())
+		else if(this.m_Date.getDateNumeric() < other.getDateNumeric())
 			return -1;
 		
 		else

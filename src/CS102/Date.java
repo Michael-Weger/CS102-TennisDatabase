@@ -13,7 +13,7 @@ public class Date {
 	{
 		m_Year = date.substring(0, 4);
 		m_Month = date.substring(4, 6);
-		m_Day = date.substring(6, 9);
+		m_Day = date.substring(6, 8);
 		m_Seperator = '-';
 	}
 	

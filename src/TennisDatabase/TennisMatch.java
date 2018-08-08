@@ -29,7 +29,7 @@ public class TennisMatch implements TennisMatchInterface {
 		
 		this.m_Player1 		= player1;
 		this.m_Player2 		= player2;
-		this.m_Date 			= new Date(match[3], '-');
+		this.m_Date 		= new Date(match[3], '-');
 		this.m_Tournament 	= match[4];
 		this.m_MatchScore 	= match[5];
 		
@@ -37,7 +37,7 @@ public class TennisMatch implements TennisMatchInterface {
 			this.m_MatchScore = "Invalid";
 		
 		this.m_Winner = determineWinnerRecursive(this.m_MatchScore, 0);
-		// m_Winner 		= determineWinnerRecursive(m_MatchScore.split(","));
+		updatePlayerWinLoss(m_Winner);
 	}
 	
 	/**
@@ -48,7 +48,7 @@ public class TennisMatch implements TennisMatchInterface {
 	{
 		this.m_Player1 		= player1;
 		this.m_Player2 		= player2;
-		this.m_Date 			= new Date(match[2], '-');
+		this.m_Date 		= new Date(match[2], '-');
 		this.m_Tournament 	= match[3];
 		this.m_MatchScore 	= match[4];
 		
@@ -56,17 +56,17 @@ public class TennisMatch implements TennisMatchInterface {
 			this.m_MatchScore = "Invalid";
 		
 		this.m_Winner = determineWinnerRecursive(this.m_MatchScore, 0);
-		// this.m_Winner 		= determineWinnerRecursive(this.m_MatchScore.split(","));
+		updatePlayerWinLoss(m_Winner);
 	}
 	
-	public String getPlayer1ID()
+	public TennisPlayer getPlayer1()
 	{
-		return this.m_Player1.getPlayerID();
+		return this.m_Player1;
 	}
 	
-	public String getPlayer2ID()
+	public TennisPlayer getPlayer2()
 	{
-		return this.m_Player2.getPlayerID();
+		return this.m_Player2;
 	}
 	
 	public String getDateYYYYMMDD()
@@ -107,15 +107,6 @@ public class TennisMatch implements TennisMatchInterface {
 	public int getWinner()
 	{
 		return this.m_Winner;
-	}
-	
-	/**
-	 * Returns this match as a string
-	 */
-	public String toString()
-	{	
-		// Returns PID, PID, DATE, TOURNAMENT NAME, SET SCORE,SET SCORE...
-		return this.m_Player1.getFullName() + ", " + this.m_Player2.getFullName() + ", " + this.m_Date.getYYYYMMDD() + ", " + this.m_Tournament + ", " + this.m_MatchScore; 
 	}
 	
 	/**
@@ -220,6 +211,20 @@ public class TennisMatch implements TennisMatchInterface {
 				return 0 + determineWinnerRecursive(s, i + 4);
 		}
 	}
+	
+	private void updatePlayerWinLoss(int winner)
+	{
+		if(winner > 0)
+		{
+			m_Player1.incrementWins();
+			m_Player2.incrementLosses();
+		}
+		else if(winner < 0)
+		{
+			m_Player1.incrementLosses();
+			m_Player2.incrementWins();
+		}
+	}
 
 	@Override
 	public int compareTo(TennisMatch other) 
@@ -232,5 +237,23 @@ public class TennisMatch implements TennisMatchInterface {
 		
 		else
 			return 0;
+	}
+	
+	/**
+	 * Returns this match as a string
+	 */
+	public String toString()
+	{	
+		// Returns PID, PID, DATE, TOURNAMENT NAME, SET SCORE,SET SCORE...
+		//return this.m_Player1.getFullName() + ", " + this.m_Player2.getFullName() + ", " + this.m_Date.getYYYYMMDD() + ", " + this.m_Tournament + ", " + this.m_MatchScore;
+		return m_Player1.getFullName() + ", " + m_Player2.getFullName() + ", " + this.m_Date.getYYYYMMDD() + ", " + this.m_Tournament + ", " + this.m_MatchScore; 
+	}
+	
+	/**
+	 * Prints this match to console
+	 */
+	public void print()
+	{
+		System.out.println(this);
 	}
 }

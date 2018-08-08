@@ -1,7 +1,5 @@
 package CS102;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.util.Scanner;
 
 import TennisDatabase.TennisDatabase;
@@ -15,7 +13,6 @@ import TennisDatabase.TennisDatabase;
 public class Assignment1 {
 	
 	static TennisDatabase tennisDatabase;
-	static Scanner fileScanner;
 	static Scanner userScanner;
 	
 	/**
@@ -27,68 +24,8 @@ public class Assignment1 {
 	{
 		tennisDatabase = new TennisDatabase();
 		userScanner = new Scanner(System.in);
-		File dataFile = new File(args[0]);
 		
-		// Attempt to load the data file 
-		if(!dataFile.exists())
-		{
-			System.out.println("File not found, terminating program.");
-			System.exit(1);
-		}
-		else if(!dataFile.canRead() || !args[0].contains(".txt"))
-		{
-			System.out.println("File is of an invalid format, terminating program.");
-			System.exit(1);
-		}
-		else
-		{
-			try
-			{
-				fileScanner = new Scanner(dataFile);
-			}
-			catch(FileNotFoundException e)
-			{
-				System.out.println("File not found, terminating program.");
-				System.out.println("");
-				e.printStackTrace();
-				System.exit(1);
-			}
-		}
-		
-		// Import all valid data from the file
-		
-		while(fileScanner.hasNextLine())
-		{
-			String importedData = fileScanner.nextLine();
-			
-			// Make sure the line is long enough to determine if its a match or a player before continuing the validity test
-			if(importedData.length() > 7)
-			{
-				// Add only players to the database first
-				if(importedData.substring(0, 7).equals("PLAYER/"))
-					tennisDatabase.addPlayer(importedData, false);
-			}
-		}
-		
-		// Resets the position of the file scanner to the top of the file by creating a new instance
-		try 
-		{
-			fileScanner = new Scanner(dataFile);
-		} 
-		catch (FileNotFoundException e) 
-		{
-			e.printStackTrace();
-		}
-		
-		// Add matches now that players have been added to the database
-		while(fileScanner.hasNext())
-		{
-			String importedData = fileScanner.next();
-			
-			if(importedData.length() > 6)
-				if(importedData.substring(0, 6).equals("MATCH/"))
-					tennisDatabase.addMatch(importedData, false);
-		}
+		tennisDatabase.loadFromFile(args[0]);
 		
 		// Display all commands for the user
 		System.out.println("");
@@ -128,32 +65,39 @@ public class Assignment1 {
 					
 				case("!matches"):
 					System.out.println("");
-					tennisDatabase.printMatches();
+					tennisDatabase.printAllMatches();
+					System.out.println("");
 					break;
 					
 				case("!matchesbyplayer"):
 					System.out.println("Enter the 5 character unique ID of the player.");
 					System.out.println("");
-					tennisDatabase.printMatches(userScanner.nextLine());
+					tennisDatabase.printMatchesOfPlayer(userScanner.nextLine());
+					System.out.println("");
 					break;
 					
 				case("!players"):
 					System.out.println("");
-					// tennisDatabase.printPlayers();
+					tennisDatabase.printAllPlayers();
+					System.out.println("");
 					break;
 					
 				case("!insertmatch"):
 					System.out.println("Enter your match in the following format: PLAYER ID/PLAYER ID/DATE/TOURNAMENET/SET SCORE, SET SCORE");
-					tennisDatabase.addMatch("MATCH/" + userScanner.nextLine(), true);
+					tennisDatabase.insertMatch("MATCH/" + userScanner.nextLine(), true);
+					System.out.println("");
 					break;
 					
 				case("!insertplayer"):
 					System.out.println("Enter your player in the following format: PLAYER ID/FIRST NAME/LAST NAME/BIRTH YEAR/NATIONALITY");
-					tennisDatabase.addPlayer(userScanner.nextLine(), true);
+					tennisDatabase.insertPlayer("PLAYER/" + userScanner.nextLine(), true);
+					System.out.println("");
 					break;
 					
 				case("!exit"):
+					System.out.println("");
 					System.out.println("Terminating program.");
+					System.out.println("");
 					System.exit(0);
 					break;
 					

@@ -2,13 +2,20 @@ package TennisDatabase;
 
 public class SortedLinkedList<T extends Comparable<T>> implements SortedLinkedListInterface<T> {
 
-	private SortedLinkedListNode<T> m_Head;
+	private SortedLinkedListNode<T> m_Head; // The head of the linked list
 	
+	/**
+	 * Constructor
+	 */
 	public SortedLinkedList()
 	{
-		m_Head = null;
+		m_Head = null; // By default the head is null
 	}
 	
+	/**
+	 * Inserts a comparable data type into the linked list.
+	 * @param data The comparable data type to insert.
+	 */
 	@Override
 	public void insert(T data) throws Exception 
 	{
@@ -48,6 +55,9 @@ public class SortedLinkedList<T extends Comparable<T>> implements SortedLinkedLi
 		previousNode.next = newNode;
 	}
 
+	/**
+	 * Prints the data of all nodes in the list.
+	 */
 	@Override
 	public void print() throws RuntimeException 
 	{
@@ -62,18 +72,33 @@ public class SortedLinkedList<T extends Comparable<T>> implements SortedLinkedLi
 		}
 	}
 
+	/**
+	 * 
+	 * @author Michael Weger
+	 *
+	 * @param <T> The data type of the node
+	 */
 	@SuppressWarnings("hiding")
 	private class SortedLinkedListNode<T extends Comparable<T>>
 	{
-		public SortedLinkedListNode<T> next;
-		public T data;
+		public SortedLinkedListNode<T> next; // The preceding node in the linked list
+		public T data;	// The comparable data type of the ndoe
 		
+		/**
+		 * Constructor
+		 * @param data The comparable data which the node holds.
+		 */
 		public SortedLinkedListNode(T data)
 		{
-			this.next = null;
+			this.next = null; // By default the next node is null
 			this.data = data;
 		}
 		
+		/**
+		 * Constructor
+		 * @param next The preceding node in the linked list.
+		 * @param data The comparable data which the node holds.
+		 */
 		public SortedLinkedListNode(SortedLinkedListNode<T> next, T data)
 		{
 			this.next = next;

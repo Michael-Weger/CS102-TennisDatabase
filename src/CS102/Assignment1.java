@@ -25,6 +25,7 @@ public class Assignment1 {
 		tennisDatabase = new TennisDatabase();
 		userScanner = new Scanner(System.in);
 		
+		// Load data file
 		tennisDatabase.loadFromFile(args[0]);
 		
 		// Display all commands for the user
@@ -72,7 +73,7 @@ public class Assignment1 {
 				case("!matchesbyplayer"):
 					System.out.println("Enter the 5 character unique ID of the player.");
 					System.out.println("");
-					tennisDatabase.printMatchesOfPlayer(userScanner.nextLine());
+					tennisDatabase.printMatchesOfPlayer(userScanner.nextLine().toUpperCase());
 					System.out.println("");
 					break;
 					
@@ -84,13 +85,13 @@ public class Assignment1 {
 					
 				case("!insertmatch"):
 					System.out.println("Enter your match in the following format: PLAYER ID/PLAYER ID/DATE/TOURNAMENET/SET SCORE, SET SCORE");
-					tennisDatabase.insertMatch("MATCH/" + userScanner.nextLine(), true);
+					tennisDatabase.insertMatch("MATCH/" + userScanner.nextLine().toUpperCase(), true);
 					System.out.println("");
 					break;
 					
 				case("!insertplayer"):
-					System.out.println("Enter your player in the following format: PLAYER ID/FIRST NAME/LAST NAME/BIRTH YEAR/NATIONALITY");
-					tennisDatabase.insertPlayer("PLAYER/" + userScanner.nextLine(), true);
+					System.out.println("Enter your player in the following format: PLAYER ID/FIRST NAME/LAST NAME/BIRTH YEAR/COUNTRY");
+					tennisDatabase.insertPlayer("PLAYER/" + userScanner.nextLine().toUpperCase(), true);
 					System.out.println("");
 					break;
 					
@@ -105,7 +106,9 @@ public class Assignment1 {
 					break;
 					
 				default:
+					System.out.println("");
 					System.out.println(s + " is an unknown command. use !Help to see a list of commands.");
+					System.out.println("");
 					break;
 			}
 		}

@@ -12,8 +12,8 @@ import java.util.Scanner;
  */
 public class TennisDatabase implements TennisDatabaseInterface {
 	
-	private TennisMatchesContainer m_MatchContainer;
-	private TennisPlayersContainer m_PlayerContainer;
+	private TennisMatchesContainer m_MatchContainer;	// The match container which manipulates matches in the database
+	private TennisPlayersContainer m_PlayerContainer;	// The player container which manipulates players in the database
 	
 	public TennisDatabase()
 	{
@@ -35,11 +35,13 @@ public class TennisDatabase implements TennisDatabaseInterface {
 		if(!dataFile.exists())
 		{
 			System.out.println("File not found, terminating program.");
+			System.out.println("");
 			System.exit(1);
 		}
 		else if(!dataFile.canRead() || !fileName.contains(".txt"))
 		{
 			System.out.println("File is of an invalid format, terminating program.");
+			System.out.println("");
 			System.exit(1);
 		}
 		else
@@ -63,15 +65,8 @@ public class TennisDatabase implements TennisDatabaseInterface {
 			String importedData = fileScanner.nextLine();
 			
 			// Make sure the line is long enough to determine if its a match or a player before continuing the validity test
-			if(importedData.length() > 7)
-			{
-				// Add only players to the database first
-				if(importedData.substring(0, 7).equals("PLAYER/"))
-				{
-					System.out.println("Adding player...");
-					this.insertPlayer(importedData, true);
-				}
-			}
+			if(importedData.length() > 7 && importedData.substring(0, 7).equals("PLAYER/"))
+					this.insertPlayer(importedData, false);
 		}
 		
 		// Resets the position of the file scanner to the top of the file by creating a new instance
@@ -89,9 +84,8 @@ public class TennisDatabase implements TennisDatabaseInterface {
 		{
 			String importedData = fileScanner.nextLine();
 			
-			if(importedData.length() > 6)
-				if(importedData.substring(0, 6).equals("MATCH/"))
-					this.insertMatch(importedData, true);
+			if(importedData.length() > 6 && importedData.substring(0, 6).equals("MATCH/"))
+					this.insertMatch(importedData, false);
 		}
 	}
 	
@@ -113,12 +107,28 @@ public class TennisDatabase implements TennisDatabaseInterface {
 				System.out.println("Invalid player format. Make sure there are no missing or extraneous fields.");
 				return;
 		}
+		// Player ID is not 5 characters long
 		else if(importedPlayer[1].length() != 5)
 		{
 			if(userFeedback)
-				System.out.println("Invalid player ID, player IDs must be 5 digits and contain only alphanumeric characters.");
+				System.out.println("Invalid player ID, player IDs must be 5 characters.");
 			return;
 		}
+		// Player ID contains non alphanumeric characters
+		else if(!isAlphaNumeric(importedPlayer[1]))
+		{
+			if(userFeedback)
+				System.out.println("Invalid player ID, player IDs must be alphanumeric.");
+			return;
+		}
+		// Birth year contains non numeric characters
+		else if(!isNumeric(importedPlayer[4]))
+		{
+			if(userFeedback)
+				System.out.println("A birth year must contain only numeric characters.");
+			return;
+		}
+		// Birth year is less than 4 digits
 		else if(importedPlayer[4].length() != 4)
 		{
 			if(userFeedback)
@@ -132,10 +142,11 @@ public class TennisDatabase implements TennisDatabaseInterface {
 				System.out.println("Player already exists in database.");
 			return;
 		}
+		// Validation successful
 		else
 		{
 			if(userFeedback)
-				System.out.println("Successfully validated player!");
+				System.out.println("Successfully added player!");
 			
 			try 
 			{
@@ -164,13 +175,20 @@ public class TennisDatabase implements TennisDatabaseInterface {
 	 */
 	public void printMatchesOfPlayer(String playerID)
 	{
+		// Check to see if the player container has the player first to prevent the function from returning null
 		if(m_PlayerContainer.containsPlayer(playerID))
-			try {
+		{
+			try 
+			{
 				m_PlayerContainer.printMatchesOfPlayer(playerID);
-			} catch (TennisDatabaseException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			} 
+			catch (TennisDatabaseException e) 
+			{
+				System.out.println("Something went wrong. Player was expected but not found in database.");
 			}
+		}
+		else
+			System.out.println("That player is not in the database.");
 	}
 	
 	/**
@@ -196,7 +214,14 @@ public class TennisDatabase implements TennisDatabaseInterface {
 		else if(importedMatch[1].length() != 5 || importedMatch[2].length() !=5)
 		{
 			if(userFeedback)
-				System.out.println("Invalid player ID, player IDs must be 5 digits and contain only alphanumeric characters.");
+				System.out.println("Invalid player ID, player IDs must be 5 characters.");
+			return;
+		}
+		// Player ID isn't alphanumeric
+		else if(!isAlphaNumeric(importedMatch[1]) || !isAlphaNumeric(importedMatch[2]))
+		{
+			if(userFeedback)
+				System.out.println("Invalid player ID, player IDs must contain only alphanumeric characters.");
 			return;
 		}
 		// Identical unique player IDs
@@ -213,6 +238,13 @@ public class TennisDatabase implements TennisDatabaseInterface {
 			System.out.println(m_PlayerContainer.containsPlayer(importedMatch[2]));
 			if(userFeedback)
 				System.out.println("Invalid player IDs, a match must have both it's players already in the database.");
+			return;
+		}
+		// Date isnt numeric
+		if(!isNumeric(importedMatch[3]))
+		{
+			if(userFeedback)
+				System.out.println("Invalid date, a date must contain only numeric characters.");
 			return;
 		}
 		// Improper date format
@@ -278,6 +310,43 @@ public class TennisDatabase implements TennisDatabaseInterface {
 		m_MatchContainer.printAllMatches();
 	}
 	
+	/**
+	 * Determines if a given string contains only numeric characters
+	 * @param s The string to examine
+	 * @return The boolean result of the operation
+	 */
+	private boolean isNumeric(String s)
+	{
+		char[] charArr = s.toCharArray();
+		
+		for(char c : charArr)
+			if(!Character.isDigit(c))
+				return false;
+		
+		return true;
+	}
+	
+	/**
+	 * Determines if a given string contains only alphanumeric characters
+	 * @param s The string to examine
+	 * @return The boolean result of the operation
+	 */
+	private boolean isAlphaNumeric(String s)
+	{
+		char[] charArr = s.toCharArray();
+				
+		for(char c : charArr)
+			if(!Character.isDigit(c) && !Character.isLetter(c))
+				return false;
+		
+		return true;
+	}
+	
+	/**
+	 * A class which represents a circular doubly linked linked list to store and manipulate TennisPlayers
+	 * @author Michael Weger
+	 *
+	 */
 	private class TennisPlayersContainer implements TennisPlayersContainerInterface {
 			
 		private TennisPlayerContainerNode m_EntryPoint; // The start of the linked list
@@ -288,11 +357,14 @@ public class TennisDatabase implements TennisDatabaseInterface {
 		 */
 		public TennisPlayersContainer()
 		{
-			m_EntryPoint = null;
-			m_NumNodes = 0;
+			m_EntryPoint = null;	// When the linked list is empty the entry is null
+			m_NumNodes = 0;			// When empty we have no nodes
 		}
 
-		//TODO deletes some nodes
+		/**
+		 * Inserts a TennisPlayer to the linked list by their player ID
+		 * @param p The player to insert
+		 */
 		@Override
 		public void insertPlayer(TennisPlayer p) throws TennisDatabaseException {
 			
@@ -300,16 +372,14 @@ public class TennisDatabase implements TennisDatabaseInterface {
 			if(m_NumNodes == 0)
 			{
 				m_EntryPoint = new TennisPlayerContainerNode(p);
-				System.out.println(m_EntryPoint.player.getPlayerID());
 			}
 			// Insert node at front of list
 			else if(p.compareTo(m_EntryPoint.player) <= 0)
 			{
 				TennisPlayerContainerNode newNode = new TennisPlayerContainerNode(p, m_EntryPoint, m_EntryPoint.previous);
-				m_EntryPoint.next = newNode;
+				m_EntryPoint.previous.next = newNode;
 				m_EntryPoint.previous = newNode;
 				m_EntryPoint = newNode;
-				System.out.println(m_EntryPoint.player.getPlayerID());
 			}
 			else
 			{
@@ -322,8 +392,6 @@ public class TennisDatabase implements TennisDatabaseInterface {
 						loopNode.previous.next = newNode;
 						loopNode.previous = newNode;
 						m_NumNodes++;
-						System.out.println("Successfully added player to the database.");
-						System.out.println(newNode.player.getPlayerID());
 						return;	
 					}
 				}
@@ -332,11 +400,15 @@ public class TennisDatabase implements TennisDatabaseInterface {
 				TennisPlayerContainerNode newNode = new TennisPlayerContainerNode(p, m_EntryPoint, m_EntryPoint.previous);
 				m_EntryPoint.previous.next = newNode;
 				m_EntryPoint.previous = newNode;
-				System.out.println(newNode.player.getPlayerID());
 			}
 			m_NumNodes++;
 		}
 		
+		/**
+		 * Checks the PlayerContainer to see if it contains a given player by their ID
+		 * @param playerId The ID of the player to search for
+		 * @return The boolean result of the operation
+		 */
 		public boolean containsPlayer(String playerId)
 		{
 			if(m_NumNodes == 0)
@@ -356,6 +428,11 @@ public class TennisDatabase implements TennisDatabaseInterface {
 				
 		}
 		
+		/**
+		 * Checks the PlayerContainer for a given player by their ID and returns it
+		 * @param playerId The ID of the player to search for
+		 * @return The player if found. If the PlayerContainer does not have the player this operation will return null.
+		 */
 		public TennisPlayer getPlayer(String playerId)
 		{
 			// Player not in list
@@ -377,13 +454,19 @@ public class TennisDatabase implements TennisDatabaseInterface {
 			return null;
 		}
 
+		/**
+		 * Inserts a match to the lower level sorted linked list in each node.
+		 * @param m The match to insert
+		 */
 		@Override
 		public void insertMatch(TennisMatch m) throws TennisDatabaseException 
 		{
+			// No nodes in list
 			if(m_NumNodes == 0)
 				System.out.println("There are currently no players in the database.");
 			else
 			{
+				// Check the entrypoint to see if it has any players in the given match
 				if(m_EntryPoint.player.equals(m.getPlayer1()) || m_EntryPoint.player.equals(m.getPlayer2()))
 				{
 					try 
@@ -396,6 +479,7 @@ public class TennisDatabase implements TennisDatabaseInterface {
 					}
 				}
 				
+				// Search the remainder of the nodes
 				for(TennisPlayerContainerNode loopNode = m_EntryPoint.next; !loopNode.equals(m_EntryPoint); loopNode = loopNode.next)
 				{
 					if(loopNode.player.equals(m.getPlayer1()) || loopNode.player.equals(m.getPlayer2()))
@@ -413,9 +497,13 @@ public class TennisDatabase implements TennisDatabaseInterface {
 			}
 		}
 
+		/**
+		 * Prints all players in the PlayerContainer
+		 */
 		@Override
 		public void printAllPlayers() throws TennisDatabaseRuntimeException {
 			
+			// No players
 			if(m_NumNodes == 0)
 				System.out.println("There are currently no players in the database.");
 			else
@@ -429,6 +517,10 @@ public class TennisDatabase implements TennisDatabaseInterface {
 			
 		}
 
+		/**
+		 * Prints the matches of a specific player
+		 * @param playerId The player ID of the player whose matches will be printed
+		 */
 		@Override
 		public void printMatchesOfPlayer(String playerId) throws TennisDatabaseException {
 			
@@ -446,13 +538,25 @@ public class TennisDatabase implements TennisDatabaseInterface {
 			}
 		}
 		
+		/**
+		 * Nodes for the TennisPlayersContainer linked list
+		 * 
+		 * @author Michael Weger
+		 *
+		 */
 		private class TennisPlayerContainerNode {
 			
-			public TennisPlayerContainerNode next;
-			public TennisPlayerContainerNode previous;
-			public TennisPlayer player;
-			public SortedLinkedList<TennisMatch> tennisMatches;
+			public TennisPlayerContainerNode next;				// The next node
+			public TennisPlayerContainerNode previous;			// The previous node
+			public TennisPlayer player;							// The player which this node contains
+			public SortedLinkedList<TennisMatch> tennisMatches;	// The linked list of matches in which this nodes player participated in
 			
+			/**
+			 * Constructor
+			 * @param player The player which this node contains
+			 * @param next The next node in the linked list
+			 * @param previous The previous node in the linked list
+			 */
 			public TennisPlayerContainerNode(TennisPlayer player, TennisPlayerContainerNode next, TennisPlayerContainerNode previous)
 			{
 				this.player = player;
@@ -460,10 +564,15 @@ public class TennisDatabase implements TennisDatabaseInterface {
 				this.previous = previous;
 				this.tennisMatches = new SortedLinkedList<TennisMatch>();
 			}
+			
+			/**
+			 * Constructor
+			 * @param player The player which this node contains
+			 */
 			public TennisPlayerContainerNode(TennisPlayer player)
 			{
 				this.player = player;
-				this.next = this;
+				this.next = this; 		// As a circular linked list a node with no next or previous nodes must point to itself
 				this.previous = this;
 				this.tennisMatches = new SortedLinkedList<TennisMatch>();
 			}
@@ -547,6 +656,11 @@ public class TennisDatabase implements TennisDatabaseInterface {
 			}
 		}
 		
+		/**
+		 * Performs a right shift on the array for a match insertion operation
+		 * @param indexOfInsertion The index at which to insert the match
+		 * @param match The match to insert
+		 */
 		private void rightShift(int indexOfInsertion, TennisMatch match)
 		{
 			// Shift all items right of the index of insertion one index to the right
@@ -558,8 +672,9 @@ public class TennisDatabase implements TennisDatabaseInterface {
 			// Insert the new item
 			m_Array[indexOfInsertion] = match;
 		}
+		
 		/**
-		 * Allocates memory for an additional index in the array
+		 * Allocates twice the amount of memory for the array
 		 */
 		private void resizeArray()
 		{

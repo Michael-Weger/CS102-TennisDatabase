@@ -19,6 +19,9 @@ public class SortedLinkedList<T extends Comparable<T>> implements SortedLinkedLi
 	@Override
 	public void insert(T data) throws Exception 
 	{
+		if(data == null)
+			throw new Exception("Attempted to insert null data.");
+		
 		// No items in list
 		if(m_Head == null)
 		{
@@ -62,7 +65,9 @@ public class SortedLinkedList<T extends Comparable<T>> implements SortedLinkedLi
 	public void print() throws RuntimeException 
 	{
 		if(m_Head == null)
-			System.out.println("No items in list!");
+		{
+			throw new RuntimeException("No items in list!");
+		}
 		else
 		{
 			for(SortedLinkedListNode<T> loopNode = m_Head; loopNode != null; loopNode = loopNode.next)

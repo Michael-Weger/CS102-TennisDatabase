@@ -25,7 +25,7 @@ public class TennisDatabase implements TennisDatabaseInterface {
 	 * Loads the file from a string with which the program was started
 	 * @param fileName the path at which the text file is located
 	 */
-	public void loadFromFile(String fileName)
+	public void loadFromFile(String fileName) throws TennisDatabaseRuntimeException
 	{
 
 		Scanner fileScanner = null;
@@ -34,15 +34,11 @@ public class TennisDatabase implements TennisDatabaseInterface {
 		// Attempt to load the data file 
 		if(!dataFile.exists())
 		{
-			System.out.println("File not found, terminating program.");
-			System.out.println("");
-			System.exit(1);
+			throw new TennisDatabaseRuntimeException("File not found, , continuining without loading any preexisting data.");
 		}
 		else if(!dataFile.canRead() || !fileName.contains(".txt"))
 		{
-			System.out.println("File is of an invalid format, terminating program.");
-			System.out.println("");
-			System.exit(1);
+			throw new TennisDatabaseRuntimeException("File is of an invalid format, continuining without loading any preexisting data.");
 		}
 		else
 		{
@@ -52,9 +48,7 @@ public class TennisDatabase implements TennisDatabaseInterface {
 			}
 			catch(FileNotFoundException e)
 			{
-				System.out.println("File not found, terminating program.");
-				System.out.println("");
-				System.exit(1);
+				throw new TennisDatabaseRuntimeException("File not found, , continuining without loading any preexisting data.");
 			}
 		}
 		
@@ -64,14 +58,24 @@ public class TennisDatabase implements TennisDatabaseInterface {
 		{
 			String importedData = fileScanner.nextLine();
 			
-			// Make sure the line is long enough to determine if its a match or a player before continuing the validity test
+			// Make sure the line is long enough to determine if its a player before continuing the validity test
 			if(importedData.length() > 7 && importedData.substring(0, 7).equals("PLAYER/"))
+			{
+				try
+				{
 					this.insertPlayer(importedData, false);
+				}
+				catch(TennisDatabaseException e)
+				{
+					
+				}
+			}
 		}
 		
 		// Resets the position of the file scanner to the top of the file by creating a new instance
 		try 
 		{
+			fileScanner.close();
 			fileScanner = new Scanner(dataFile);
 		} 
 		catch (FileNotFoundException e) 
@@ -84,9 +88,21 @@ public class TennisDatabase implements TennisDatabaseInterface {
 		{
 			String importedData = fileScanner.nextLine();
 			
+			// Make sure the line is long enough to determine if its a match before continuing the validity test
 			if(importedData.length() > 6 && importedData.substring(0, 6).equals("MATCH/"))
+			{
+				try
+				{
 					this.insertMatch(importedData, false);
+				}
+				catch(TennisDatabaseException e)
+				{
+					
+				}
+			}
 		}
+		
+		fileScanner.close();
 	}
 	
 	/**
@@ -94,7 +110,7 @@ public class TennisDatabase implements TennisDatabaseInterface {
 	 * @param p The string from which a player will be created
 	 * @param userFeedback a boolean value which determines whether or not to provide system prints to a user.
 	 */
-	public void insertPlayer(String p, boolean userFeedback)
+	public void insertPlayer(String p, boolean userFeedback) throws TennisDatabaseException
 	{
 		String[] importedPlayer = p.split("/");
 		
@@ -103,59 +119,46 @@ public class TennisDatabase implements TennisDatabaseInterface {
 		// Invalid format
 		if(importedPlayer.length != 6)
 		{
-			if(userFeedback)
-				System.out.println("Invalid player format. Make sure there are no missing or extraneous fields.");
-				return;
+			throw new TennisDatabaseException("Invalid player format. Make sure there are no missing or extraneous fields.");
 		}
 		// Player ID is not 5 characters long
 		else if(importedPlayer[1].length() != 5)
 		{
-			if(userFeedback)
-				System.out.println("Invalid player ID, player IDs must be 5 characters.");
-			return;
+			throw new TennisDatabaseException("Invalid player ID, player IDs must be 5 characters.");
 		}
 		// Player ID contains non alphanumeric characters
 		else if(!isAlphaNumeric(importedPlayer[1]))
 		{
-			if(userFeedback)
-				System.out.println("Invalid player ID, player IDs must be alphanumeric.");
-			return;
+			throw new TennisDatabaseException("Invalid player ID, player IDs must be alphanumeric.");
 		}
 		// Birth year contains non numeric characters
 		else if(!isNumeric(importedPlayer[4]))
 		{
-			if(userFeedback)
-				System.out.println("A birth year must contain only numeric characters.");
-			return;
+			throw new TennisDatabaseException("A birth year must contain only numeric characters.");
 		}
 		// Birth year is less than 4 digits
 		else if(importedPlayer[4].length() != 4)
 		{
-			if(userFeedback)
-				System.out.println("A valid birth year must have four digits.");
-			return;
+			throw new TennisDatabaseException("A valid birth year must have four digits.");
 		}
 		// Player is already in database
 		else if(m_PlayerContainer.containsPlayer(importedPlayer[1]))
 		{
-			if(userFeedback)
-				System.out.println("Player already exists in database.");
-			return;
+			throw new TennisDatabaseException("Player already exists in database.");
 		}
 		// Validation successful
 		else
-		{
-			if(userFeedback)
-				System.out.println("Successfully added player!");
-			
+		{	
 			try 
 			{
 				m_PlayerContainer.insertPlayer(new TennisPlayer(p));
+				if(userFeedback)
+					System.out.println("Successfully added player!");
 			} 
 			catch (TennisDatabaseException e) 
 			{
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				if(userFeedback)
+					System.out.println(e.getMessage());
 			}
 		}
 	}
@@ -163,9 +166,16 @@ public class TennisDatabase implements TennisDatabaseInterface {
 	/**
 	 * Prints all players in the database
 	 */
-	public void printAllPlayers()
+	public void printAllPlayers() throws TennisDatabaseRuntimeException
 	{
-		m_PlayerContainer.printAllPlayers();
+		try
+		{
+			m_PlayerContainer.printAllPlayers();
+		}
+		catch(TennisDatabaseRuntimeException e)
+		{
+			throw e;
+		}
 	}
 	
 	/**
@@ -173,22 +183,16 @@ public class TennisDatabase implements TennisDatabaseInterface {
 	 * 
 	 * @param playerID The unique player ID of the player whose matches the user wants to print.
 	 */
-	public void printMatchesOfPlayer(String playerID)
+	public void printMatchesOfPlayer(String playerID)  throws TennisDatabaseException, TennisDatabaseRuntimeException
 	{
-		// Check to see if the player container has the player first to prevent the function from returning null
-		if(m_PlayerContainer.containsPlayer(playerID))
+		try 
 		{
-			try 
-			{
-				m_PlayerContainer.printMatchesOfPlayer(playerID);
-			} 
-			catch (TennisDatabaseException e) 
-			{
-				System.out.println("Something went wrong. Player was expected but not found in database.");
-			}
+			m_PlayerContainer.printMatchesOfPlayer(playerID);
+		} 
+		catch (TennisDatabaseException e) 
+		{
+			throw e;
 		}
-		else
-			System.out.println("That player is not in the database.");
 	}
 	
 	/**
@@ -197,7 +201,7 @@ public class TennisDatabase implements TennisDatabaseInterface {
 	 * @param m the match as a string PLAYER ID/PLAYER ID/DATE/TOURNAMENT/SET SCORE,SET SCORE...
 	 * @param userFeedback a boolean value which determines whether or not to provide system prints to a user.
 	 */
-	public void insertMatch(String m, boolean userFeedback)
+	public void insertMatch(String m, boolean userFeedback) throws TennisDatabaseException
 	{
 		String[] importedMatch = m.split("/");
 		
@@ -206,81 +210,57 @@ public class TennisDatabase implements TennisDatabaseInterface {
 		// Invalid format
 		if(importedMatch.length != 6)
 		{
-			if(userFeedback)
-				System.out.println("Invalid match format. Make sure there are no missing or extraneous fields.");
-			return;
+			throw new TennisDatabaseException("Invalid match format. Make sure there are no missing or extraneous fields.");
 		}
 		// Invalid unique player ID
 		else if(importedMatch[1].length() != 5 || importedMatch[2].length() !=5)
 		{
-			if(userFeedback)
-				System.out.println("Invalid player ID, player IDs must be 5 characters.");
-			return;
+			throw new TennisDatabaseException("Invalid player ID, player IDs must be 5 characters.");
 		}
 		// Player ID isn't alphanumeric
 		else if(!isAlphaNumeric(importedMatch[1]) || !isAlphaNumeric(importedMatch[2]))
 		{
-			if(userFeedback)
-				System.out.println("Invalid player ID, player IDs must contain only alphanumeric characters.");
-			return;
+			throw new TennisDatabaseException("Invalid player ID, player IDs must contain only alphanumeric characters.");
 		}
 		// Identical unique player IDs
 		else if(importedMatch[1].equals(importedMatch[2]))
 		{
-			if(userFeedback)
-				System.out.println("Invalid player IDs, a match cannot have two identical player IDs.");
-			return;
+			throw new TennisDatabaseException("Invalid player IDs, a match cannot have two identical player IDs.");
 		}
 		// Players aren't in the database
 		else if(!m_PlayerContainer.containsPlayer(importedMatch[1]) || !m_PlayerContainer.containsPlayer(importedMatch[2]))
 		{
-			System.out.println(m_PlayerContainer.containsPlayer(importedMatch[1]));
-			System.out.println(m_PlayerContainer.containsPlayer(importedMatch[2]));
-			if(userFeedback)
-				System.out.println("Invalid player IDs, a match must have both it's players already in the database.");
-			return;
+			throw new TennisDatabaseException("Invalid player IDs, a match must have both it's players already in the database.");
 		}
 		// Date isnt numeric
 		if(!isNumeric(importedMatch[3]))
 		{
-			if(userFeedback)
-				System.out.println("Invalid date, a date must contain only numeric characters.");
-			return;
+			throw new TennisDatabaseException("Invalid date, a date must contain only numeric characters.");
 		}
 		// Improper date format
 		else if(importedMatch[3].length() != 8)
 		{
-			if(userFeedback)
-				System.out.println("Invalid date, a date must have 8 digits: YYYYMMDD");
-			return;
+			throw new TennisDatabaseException("Invalid date, a date must have 8 digits: YYYYMMDD");
 		}
 		// Too small of a year
 		else if(Integer.parseInt(importedMatch[3].substring(0, 4)) < 1100)
 		{
-			if(userFeedback)
-				System.out.println("Invalid date, tennis didn't exist before the 12th century. Tell a historian about your match!");
-			return;
+			throw new TennisDatabaseException("Invalid date, tennis didn't exist before the 12th century. Tell a historian about your match!");
 		}
 		// Too large of a month
 		else if(Integer.parseInt(importedMatch[3].substring(4, 6)) > 12)
 		{
-			if(userFeedback)
-				System.out.println("Invalid date, there are only 12 months in a year.");
-			return;
+			throw new TennisDatabaseException("Invalid date, there are only 12 months in a year.");
 		}
 		// Too large of a date
 		else if(Integer.parseInt(importedMatch[3].substring(6, 8)) > 31)
 		{
-			if(userFeedback)
-				System.out.println("Invalid date, there are no more than 31 days in a month");
-			return;
+			throw new TennisDatabaseException("Invalid date, there are no more than 31 days in a month");
 		}
 		// Too many or too few sets in a match
 		else if(importedMatch[5].split(",").length < 2)
 		{
-			if(userFeedback)
-				System.out.println("Invalid set scores, a match must have at least two sets.");
-			return;
+			throw new TennisDatabaseException("Invalid set scores, a match must have at least two sets.");
 		}
 		// Actually adding the match
 		else
@@ -290,24 +270,34 @@ public class TennisDatabase implements TennisDatabaseInterface {
 			
 			TennisMatch match = new TennisMatch(m, player1, player2);
 			m_MatchContainer.insertMatch(match);
-			try {
+			try 
+			{
 				m_PlayerContainer.insertMatch(match);
-			} catch (TennisDatabaseException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				
+				if(userFeedback)
+					System.out.println("Match successfully added.");
+			} 
+			catch (TennisDatabaseException e) 
+			{
+				if(userFeedback)
+					System.out.println(e.getMessage());
 			}
-			
-			if(userFeedback)
-				System.out.println("Match successfully added.");
 		}
 	}
 	
 	/**
 	 * Prints all matches from the TennisMatchesContainer sorted by most recent .
 	 */
-	public void printAllMatches()
+	public void printAllMatches() throws TennisDatabaseRuntimeException
 	{
-		m_MatchContainer.printAllMatches();
+		try
+		{
+			m_MatchContainer.printAllMatches();
+		}
+		catch(TennisDatabaseRuntimeException e)
+		{
+			throw e;
+		}
 	}
 	
 	/**
@@ -367,6 +357,9 @@ public class TennisDatabase implements TennisDatabaseInterface {
 		 */
 		@Override
 		public void insertPlayer(TennisPlayer p) throws TennisDatabaseException {
+			
+			if(p == null)
+				throw new TennisDatabaseException("Attempted to insert null player into the database.");
 			
 			// No nodes in list
 			if(m_NumNodes == 0)
@@ -459,11 +452,18 @@ public class TennisDatabase implements TennisDatabaseInterface {
 		 * @param m The match to insert
 		 */
 		@Override
-		public void insertMatch(TennisMatch m) throws TennisDatabaseException 
+		public void insertMatch(TennisMatch m) throws TennisDatabaseException
 		{
+			
+			boolean hasInserted = false;
+			
+			// Match is null
+			if(m == null)
+				throw new TennisDatabaseException("Attempted to insert null match into the database.");
+			
 			// No nodes in list
 			if(m_NumNodes == 0)
-				System.out.println("There are currently no players in the database.");
+				throw new TennisDatabaseException("There are currently no players in the database.");
 			else
 			{
 				// Check the entrypoint to see if it has any players in the given match
@@ -472,10 +472,11 @@ public class TennisDatabase implements TennisDatabaseInterface {
 					try 
 					{
 						m_EntryPoint.tennisMatches.insert(m);
+						hasInserted = true;
 					} 
-					catch (Exception e) 
+					catch(Exception e) 
 					{
-						e.printStackTrace();
+						System.out.println(e.getMessage());
 					}
 				}
 				
@@ -487,13 +488,17 @@ public class TennisDatabase implements TennisDatabaseInterface {
 						try 
 						{
 							loopNode.tennisMatches.insert(m);
+							hasInserted = true;
 						} 
 						catch (Exception e) 
 						{
-							e.printStackTrace();
+							System.out.println(e.getMessage());
 						}
 					}
 				}
+				
+				if(!hasInserted)
+					throw new TennisDatabaseException("Unable to find a player in the database who has played in this match."); 
 			}
 		}
 
@@ -505,7 +510,7 @@ public class TennisDatabase implements TennisDatabaseInterface {
 			
 			// No players
 			if(m_NumNodes == 0)
-				System.out.println("There are currently no players in the database.");
+				throw new TennisDatabaseRuntimeException("There are currently no players in the database.");
 			else
 			{
 				System.out.println(m_EntryPoint.player);
@@ -525,14 +530,25 @@ public class TennisDatabase implements TennisDatabaseInterface {
 		public void printMatchesOfPlayer(String playerId) throws TennisDatabaseException {
 			
 			if(m_NumNodes == 0)
-				System.out.println("There are currently no players in the database.");
+				throw new TennisDatabaseException("There are currently no players in the database.");
+			
+			else if(!this.containsPlayer(playerId))
+				throw new TennisDatabaseException("There are currently no players of ID " + playerId + " in the database.");
+			
 			else
 			{
 				for(TennisPlayerContainerNode loopNode = m_EntryPoint.next; !loopNode.equals(m_EntryPoint); loopNode = loopNode.next)
 				{
 					if(loopNode.player.equals(playerId))
 					{
-						loopNode.tennisMatches.print();
+						try
+						{
+							loopNode.tennisMatches.print();
+						}
+						catch(Exception e)
+						{
+							System.out.println(e.getMessage());
+						}
 					}
 				}
 			}
@@ -608,8 +624,12 @@ public class TennisDatabase implements TennisDatabaseInterface {
 		 * 
 		 * @param match A valid tennis match after passing validity testing from the method in the TennisDatabase class
 		 */
-		public void insertMatch(TennisMatch match)
+		public void insertMatch(TennisMatch match) throws TennisDatabaseException
 		{	
+			
+			if(match == null)
+				throw new TennisDatabaseException("Attempted to insert null match into the database.");
+			
 			int index = -1;
 			
 			for(int i = 0; i < m_PhysicalSize; i++)
@@ -623,7 +643,7 @@ public class TennisDatabase implements TennisDatabaseInterface {
 			}
 			
 			// Resize the array if there is no room
-			if(m_Array.length < m_PhysicalSize)
+			if(m_Array.length < m_PhysicalSize + 1)
 				resizeArray();
 			
 			// No index was found its the new last item
@@ -640,13 +660,12 @@ public class TennisDatabase implements TennisDatabaseInterface {
 		/**
 		 * Prints all matches currently in the database
 		 */
-		public void printAllMatches()
+		public void printAllMatches() throws TennisDatabaseRuntimeException
 		{
 			// Provide feedback to the user if there aren't any matches
 			if(m_PhysicalSize == 0)
 			{
-				System.out.println("There are currently no matches in the database.");
-				return;
+				throw new TennisDatabaseRuntimeException("There are currently no matches in the database.");
 			}
 			// Print all matches
 			for(TennisMatch m : m_Array)

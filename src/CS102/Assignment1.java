@@ -3,6 +3,8 @@ package CS102;
 import java.util.Scanner;
 
 import TennisDatabase.TennisDatabase;
+import TennisDatabase.TennisDatabaseException;
+import TennisDatabase.TennisDatabaseRuntimeException;
 
 /**
  * Main class of the project
@@ -26,7 +28,16 @@ public class Assignment1 {
 		userScanner = new Scanner(System.in);
 		
 		// Load data file
-		tennisDatabase.loadFromFile(args[0]);
+		try
+		{
+			tennisDatabase.loadFromFile(args[0]);
+		}
+		catch(TennisDatabaseRuntimeException e)
+		{
+			System.out.println("");
+			System.out.println(e.getMessage());
+			System.out.println("");
+		}
 		
 		// Display all commands for the user
 		System.out.println("");
@@ -66,32 +77,68 @@ public class Assignment1 {
 					
 				case("!matches"):
 					System.out.println("");
-					tennisDatabase.printAllMatches();
+					try
+					{
+						tennisDatabase.printAllMatches();
+					}
+					catch(TennisDatabaseRuntimeException e)
+					{
+						System.out.println(e.getMessage());
+					}
 					System.out.println("");
 					break;
 					
 				case("!matchesbyplayer"):
 					System.out.println("Enter the 5 character unique ID of the player.");
 					System.out.println("");
-					tennisDatabase.printMatchesOfPlayer(userScanner.nextLine().toUpperCase());
+					try
+					{
+						tennisDatabase.printMatchesOfPlayer(userScanner.nextLine().toUpperCase());
+
+					}
+					catch(TennisDatabaseException e)
+					{
+						System.out.println(e.getMessage());
+					}
 					System.out.println("");
 					break;
 					
 				case("!players"):
 					System.out.println("");
-					tennisDatabase.printAllPlayers();
+					try
+					{
+						tennisDatabase.printAllPlayers();
+					}
+					catch(TennisDatabaseRuntimeException e)
+					{
+						System.out.println(e.getMessage());
+					}
 					System.out.println("");
 					break;
 					
 				case("!insertmatch"):
 					System.out.println("Enter your match in the following format: PLAYER ID/PLAYER ID/DATE/TOURNAMENET/SET SCORE, SET SCORE");
-					tennisDatabase.insertMatch("MATCH/" + userScanner.nextLine().toUpperCase(), true);
+					try
+					{
+						tennisDatabase.insertMatch("MATCH/" + userScanner.nextLine().toUpperCase(), true);
+					}
+					catch(TennisDatabaseException e)
+					{
+						System.out.println(e.getMessage());
+					}
 					System.out.println("");
 					break;
 					
 				case("!insertplayer"):
 					System.out.println("Enter your player in the following format: PLAYER ID/FIRST NAME/LAST NAME/BIRTH YEAR/COUNTRY");
-					tennisDatabase.insertPlayer("PLAYER/" + userScanner.nextLine().toUpperCase(), true);
+					try
+					{
+						tennisDatabase.insertPlayer("PLAYER/" + userScanner.nextLine().toUpperCase(), true);
+					}
+					catch(TennisDatabaseException e)
+					{
+						System.out.println(e.getMessage());
+					}
 					System.out.println("");
 					break;
 					

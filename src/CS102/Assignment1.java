@@ -38,6 +38,12 @@ public class Assignment1 {
 			System.out.println(e.getMessage());
 			System.out.println("");
 		}
+		catch(ArrayIndexOutOfBoundsException e1)
+		{
+			System.out.println("");
+			System.out.println("No path specified, continuing without loading a data file.");
+			System.out.println("");
+		}
 		
 		// Display all commands for the user
 		System.out.println("");

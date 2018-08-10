@@ -10,7 +10,7 @@ interface TennisMatchesContainerInterface {
 
    // Desc.: Insert a tennis match into this container.
    // Input: A tennis match.
-   // Output: Throws a checked (critical) exception if the container is full.
+   // Output: Throws a checked (critical) exception if the match is null.
    public void insertMatch( TennisMatch m ) throws TennisDatabaseException;
    
    // Desc.: Prints all tennis matches to the console.

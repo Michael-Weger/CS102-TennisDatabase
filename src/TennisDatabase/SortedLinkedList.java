@@ -64,10 +64,12 @@ public class SortedLinkedList<T extends Comparable<T>> implements SortedLinkedLi
 	@Override
 	public void print() throws RuntimeException 
 	{
+		// Empty list
 		if(m_Head == null)
 		{
 			throw new RuntimeException("No items in list!");
 		}
+		// Traverse list and print data
 		else
 		{
 			for(SortedLinkedListNode<T> loopNode = m_Head; loopNode != null; loopNode = loopNode.next)

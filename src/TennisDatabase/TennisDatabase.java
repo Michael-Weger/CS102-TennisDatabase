@@ -404,8 +404,10 @@ public class TennisDatabase implements TennisDatabaseInterface {
 		 */
 		public boolean containsPlayer(String playerId)
 		{
+			// Empty list
 			if(m_NumNodes == 0)
 				return false;
+			// Traverse list and check each player's ID to see if it matches
 			else
 			{
 				if(m_EntryPoint.player.equals(playerId))
@@ -511,6 +513,7 @@ public class TennisDatabase implements TennisDatabaseInterface {
 			// No players
 			if(m_NumNodes == 0)
 				throw new TennisDatabaseRuntimeException("There are currently no players in the database.");
+			// Traverse the list and print all players
 			else
 			{
 				System.out.println(m_EntryPoint.player);
@@ -529,14 +532,29 @@ public class TennisDatabase implements TennisDatabaseInterface {
 		@Override
 		public void printMatchesOfPlayer(String playerId) throws TennisDatabaseException {
 			
+			// No players
 			if(m_NumNodes == 0)
 				throw new TennisDatabaseException("There are currently no players in the database.");
 			
+			// No player of ID found
 			else if(!this.containsPlayer(playerId))
 				throw new TennisDatabaseException("There are currently no players of ID " + playerId + " in the database.");
 			
 			else
 			{
+				if(m_EntryPoint.player.equals(playerId))
+				{
+					try
+					{
+						m_EntryPoint.tennisMatches.print();
+					}
+					catch(Exception e)
+					{
+						System.out.println(e.getMessage());
+					}
+				}
+				
+				// Traverse list and print players
 				for(TennisPlayerContainerNode loopNode = m_EntryPoint.next; !loopNode.equals(m_EntryPoint); loopNode = loopNode.next)
 				{
 					if(loopNode.player.equals(playerId))
@@ -671,7 +689,7 @@ public class TennisDatabase implements TennisDatabaseInterface {
 			for(TennisMatch m : m_Array)
 			{
 				if(m != null)
-					System.out.println(m);
+					m.print();
 			}
 		}
 		

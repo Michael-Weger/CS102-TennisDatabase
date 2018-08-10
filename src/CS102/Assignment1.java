@@ -90,10 +90,11 @@ public class Assignment1 {
 					
 				case("!matchesbyplayer"):
 					System.out.println("Enter the 5 character unique ID of the player.");
-					System.out.println("");
 					try
 					{
-						tennisDatabase.printMatchesOfPlayer(userScanner.nextLine().toUpperCase());
+						s = userScanner.nextLine().toUpperCase();
+						System.out.println("");
+						tennisDatabase.printMatchesOfPlayer(s);
 
 					}
 					catch(TennisDatabaseException e)
@@ -120,7 +121,8 @@ public class Assignment1 {
 					System.out.println("Enter your match in the following format: PLAYER ID/PLAYER ID/DATE/TOURNAMENET/SET SCORE, SET SCORE");
 					try
 					{
-						tennisDatabase.insertMatch("MATCH/" + userScanner.nextLine().toUpperCase(), true);
+						s = userScanner.nextLine().toUpperCase();
+						tennisDatabase.insertMatch("MATCH/" + s, true);
 					}
 					catch(TennisDatabaseException e)
 					{
@@ -133,7 +135,8 @@ public class Assignment1 {
 					System.out.println("Enter your player in the following format: PLAYER ID/FIRST NAME/LAST NAME/BIRTH YEAR/COUNTRY");
 					try
 					{
-						tennisDatabase.insertPlayer("PLAYER/" + userScanner.nextLine().toUpperCase(), true);
+						s = userScanner.nextLine().toUpperCase();
+						tennisDatabase.insertPlayer("PLAYER/" + s, true);
 					}
 					catch(TennisDatabaseException e)
 					{

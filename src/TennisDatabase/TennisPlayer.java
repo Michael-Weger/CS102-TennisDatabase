@@ -159,7 +159,7 @@ public class TennisPlayer implements TennisPlayerInterface {
 
 	/**
 	 * Compares this player to another
-	 * @return Returns 1 if this player's ID is lexographically less than the other. 0 if both players have the same lexographical value. -1 if this player has a greater lexographical value than the other.
+	 * @return Returns 1 if this player's ID is lexicographically less than the other. 0 if both players have the same lexographical value. -1 if this player has a greater lexographical value than the other.
 	 */
 	@Override
 	public int compareTo(TennisPlayer otherPlayer) {

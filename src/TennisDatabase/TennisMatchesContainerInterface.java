@@ -3,8 +3,6 @@
 
 package TennisDatabase;
 
-import java.lang.Object;
-
 // Interface (package-private) providing the specifications for the TennisMatchesContainer class.
 interface TennisMatchesContainerInterface {
 

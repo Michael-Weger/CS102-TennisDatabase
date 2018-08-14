@@ -12,7 +12,7 @@ import TennisDatabase.TennisDatabaseRuntimeException;
  * @author Michael Weger
  *
  */
-public class Assignment1 {
+public class Assignment2 {
 	
 	static TennisDatabase tennisDatabase;
 	static Scanner userScanner;
@@ -30,7 +30,7 @@ public class Assignment1 {
 		// Load data file
 		try
 		{
-			tennisDatabase.loadFromFile(args[0]);
+			tennisDatabase.readFromFile(args[0]);
 		}
 		catch(TennisDatabaseRuntimeException e)
 		{

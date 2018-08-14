@@ -286,7 +286,6 @@ public class TennisMatch implements TennisMatchInterface {
 	public String toString()
 	{	
 		// Returns PID, PID, DATE, TOURNAMENT NAME, SET SCORE,SET SCORE...
-		//return this.m_Player1.getFullName() + ", " + this.m_Player2.getFullName() + ", " + this.m_Date.getYYYYMMDD() + ", " + this.m_Tournament + ", " + this.m_MatchScore;
 		return m_Player1.getFullName() + ", " + m_Player2.getFullName() + ", " + this.m_Date.getYYYYMMDD() + ", " + this.m_Tournament + ", " + this.m_MatchScore; 
 	}
 	

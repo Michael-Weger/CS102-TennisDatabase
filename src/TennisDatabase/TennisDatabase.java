@@ -2,6 +2,7 @@ package TennisDatabase;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.util.Scanner;
 
 /**
@@ -25,10 +26,9 @@ public class TennisDatabase implements TennisDatabaseInterface {
 	 * Loads the file from a string with which the program was started
 	 * @param fileName the path at which the text file is located
 	 */
-	public void loadFromFile(String fileName) throws TennisDatabaseRuntimeException
+	public void readFromFile(String fileName) throws TennisDatabaseRuntimeException
 	{
-
-		Scanner fileScanner = null;
+		Scanner scanner = null;
 		File dataFile = new File(fileName);
 		
 		// Attempt to load the data file 
@@ -44,7 +44,7 @@ public class TennisDatabase implements TennisDatabaseInterface {
 		{
 			try
 			{
-				fileScanner = new Scanner(dataFile);
+				scanner = new Scanner(dataFile);
 			}
 			catch(FileNotFoundException e)
 			{
@@ -54,20 +54,21 @@ public class TennisDatabase implements TennisDatabaseInterface {
 		
 		// Import all valid data from the file
 		
-		while(fileScanner.hasNextLine())
+		while(scanner.hasNextLine())
 		{
-			String importedData = fileScanner.nextLine();
+			String importedData = scanner.nextLine();
 			
 			// Make sure the line is long enough to determine if its a player before continuing the validity test
 			if(importedData.length() > 7 && importedData.substring(0, 7).equals("PLAYER/"))
 			{
 				try
 				{
-					this.insertPlayer(importedData, false);
+					System.out.println(importedData);
+					this.insertPlayer(importedData, true);
 				}
 				catch(TennisDatabaseException e)
 				{
-					
+					System.out.println(e.getMessage());
 				}
 			}
 		}
@@ -75,8 +76,8 @@ public class TennisDatabase implements TennisDatabaseInterface {
 		// Resets the position of the file scanner to the top of the file by creating a new instance
 		try 
 		{
-			fileScanner.close();
-			fileScanner = new Scanner(dataFile);
+			scanner.close();
+			scanner = new Scanner(dataFile);
 		} 
 		catch (FileNotFoundException e) 
 		{
@@ -84,9 +85,9 @@ public class TennisDatabase implements TennisDatabaseInterface {
 		}
 		
 		// Add matches now that players have been added to the database
-		while(fileScanner.hasNext())
+		while(scanner.hasNext())
 		{
-			String importedData = fileScanner.nextLine();
+			String importedData = scanner.nextLine();
 			
 			// Make sure the line is long enough to determine if its a match before continuing the validity test
 			if(importedData.length() > 6 && importedData.substring(0, 6).equals("MATCH/"))
@@ -101,8 +102,42 @@ public class TennisDatabase implements TennisDatabaseInterface {
 				}
 			}
 		}
+		scanner.close();
+	}
+	
+	public void writeToFile(String fileName)
+	{
+		PrintWriter writer = null;
+		File dataFile = new File(fileName);
 		
-		fileScanner.close();
+		// Attempt to load the data file 
+		if(!dataFile.exists())
+		{
+			throw new TennisDatabaseRuntimeException("File not found, , continuining without loading any preexisting data.");
+		}
+		else if(!dataFile.canWrite() || !fileName.contains(".txt"))
+		{
+			throw new TennisDatabaseRuntimeException("File is of an invalid format, cannot export data.");
+		}
+		else
+		{
+			try
+			{
+				writer = new PrintWriter(dataFile);
+			}
+			catch(FileNotFoundException e)
+			{
+				throw new TennisDatabaseRuntimeException("File not found, , continuining without loading any preexisting data.");
+			}
+		}
+		
+		String matches = m_MatchContainer.exportTennisMatches();
+		writer.write(matches);
+		
+		//TODO players
+		
+		
+		writer.close();
 	}
 	
 	/**
@@ -330,402 +365,5 @@ public class TennisDatabase implements TennisDatabaseInterface {
 				return false;
 		
 		return true;
-	}
-	
-	/**
-	 * A class which represents a circular doubly linked linked list to store and manipulate TennisPlayers
-	 * @author Michael Weger
-	 *
-	 */
-	private class TennisPlayersContainer implements TennisPlayersContainerInterface {
-			
-		private TennisPlayerContainerNode m_EntryPoint; // The start of the linked list
-		private int m_NumNodes;							// Number of nodes in the linked list
-		
-		/**
-		 * Constructor which sets default values
-		 */
-		public TennisPlayersContainer()
-		{
-			m_EntryPoint = null;	// When the linked list is empty the entry is null
-			m_NumNodes = 0;			// When empty we have no nodes
-		}
-
-		/**
-		 * Inserts a TennisPlayer to the linked list by their player ID
-		 * @param p The player to insert
-		 */
-		@Override
-		public void insertPlayer(TennisPlayer p) throws TennisDatabaseException {
-			
-			if(p == null)
-				throw new TennisDatabaseException("Attempted to insert null player into the database.");
-			
-			// No nodes in list
-			if(m_NumNodes == 0)
-			{
-				m_EntryPoint = new TennisPlayerContainerNode(p);
-			}
-			// Insert node at front of list
-			else if(p.compareTo(m_EntryPoint.player) <= 0)
-			{
-				TennisPlayerContainerNode newNode = new TennisPlayerContainerNode(p, m_EntryPoint, m_EntryPoint.previous);
-				m_EntryPoint.previous.next = newNode;
-				m_EntryPoint.previous = newNode;
-				m_EntryPoint = newNode;
-			}
-			else
-			{
-				// Search list for where to insert a new node
-				for(TennisPlayerContainerNode loopNode = m_EntryPoint.next; !loopNode.equals(m_EntryPoint); loopNode = loopNode.next)
-				{
-					if(p.compareTo(loopNode.player) <= 0)
-					{
-						TennisPlayerContainerNode newNode = new TennisPlayerContainerNode(p, loopNode, loopNode.previous);
-						loopNode.previous.next = newNode;
-						loopNode.previous = newNode;
-						m_NumNodes++;
-						return;	
-					}
-				}
-				
-				// Node must be inserted at the end of the list
-				TennisPlayerContainerNode newNode = new TennisPlayerContainerNode(p, m_EntryPoint, m_EntryPoint.previous);
-				m_EntryPoint.previous.next = newNode;
-				m_EntryPoint.previous = newNode;
-			}
-			m_NumNodes++;
-		}
-		
-		/**
-		 * Checks the PlayerContainer to see if it contains a given player by their ID
-		 * @param playerId The ID of the player to search for
-		 * @return The boolean result of the operation
-		 */
-		public boolean containsPlayer(String playerId)
-		{
-			// Empty list
-			if(m_NumNodes == 0)
-				return false;
-			// Traverse list and check each player's ID to see if it matches
-			else
-			{
-				if(m_EntryPoint.player.equals(playerId))
-					return true;
-				
-				for(TennisPlayerContainerNode loopNode = m_EntryPoint.next; !loopNode.equals(m_EntryPoint); loopNode = loopNode.next)
-				{
-					if(loopNode.player.equals(playerId))
-						return true;
-				}	
-			}
-			return false;
-				
-		}
-		
-		/**
-		 * Checks the PlayerContainer for a given player by their ID and returns it
-		 * @param playerId The ID of the player to search for
-		 * @return The player if found. If the PlayerContainer does not have the player this operation will return null.
-		 */
-		public TennisPlayer getPlayer(String playerId)
-		{
-			// Player not in list
-			if(!containsPlayer(playerId))
-				return null;
-			else
-			{
-				if(m_EntryPoint.player.equals(playerId))
-					return m_EntryPoint.player;
-				
-				for(TennisPlayerContainerNode loopNode = m_EntryPoint.next; !loopNode.equals(m_EntryPoint); loopNode = loopNode.next)
-				{
-					// Check if the player at the current node is the player we are looking for
-					if(loopNode.player.equals(playerId))
-						return loopNode.player;
-				}
-			}
-			// Player is not in list
-			return null;
-		}
-
-		/**
-		 * Inserts a match to the lower level sorted linked list in each node.
-		 * @param m The match to insert
-		 */
-		@Override
-		public void insertMatch(TennisMatch m) throws TennisDatabaseException
-		{
-			
-			boolean hasInserted = false;
-			
-			// Match is null
-			if(m == null)
-				throw new TennisDatabaseException("Attempted to insert null match into the database.");
-			
-			// No nodes in list
-			if(m_NumNodes == 0)
-				throw new TennisDatabaseException("There are currently no players in the database.");
-			else
-			{
-				// Check the entrypoint to see if it has any players in the given match
-				if(m_EntryPoint.player.equals(m.getPlayer1()) || m_EntryPoint.player.equals(m.getPlayer2()))
-				{
-					try 
-					{
-						m_EntryPoint.tennisMatches.insert(m);
-						hasInserted = true;
-					} 
-					catch(Exception e) 
-					{
-						System.out.println(e.getMessage());
-					}
-				}
-				
-				// Search the remainder of the nodes
-				for(TennisPlayerContainerNode loopNode = m_EntryPoint.next; !loopNode.equals(m_EntryPoint); loopNode = loopNode.next)
-				{
-					if(loopNode.player.equals(m.getPlayer1()) || loopNode.player.equals(m.getPlayer2()))
-					{
-						try 
-						{
-							loopNode.tennisMatches.insert(m);
-							hasInserted = true;
-						} 
-						catch (Exception e) 
-						{
-							System.out.println(e.getMessage());
-						}
-					}
-				}
-				
-				if(!hasInserted)
-					throw new TennisDatabaseException("Unable to find a player in the database who has played in this match."); 
-			}
-		}
-
-		/**
-		 * Prints all players in the PlayerContainer
-		 */
-		@Override
-		public void printAllPlayers() throws TennisDatabaseRuntimeException {
-			
-			// No players
-			if(m_NumNodes == 0)
-				throw new TennisDatabaseRuntimeException("There are currently no players in the database.");
-			// Traverse the list and print all players
-			else
-			{
-				System.out.println(m_EntryPoint.player);
-				for(TennisPlayerContainerNode loopNode = m_EntryPoint.next; !loopNode.equals(m_EntryPoint); loopNode = loopNode.next)
-				{
-					System.out.println(loopNode.player);
-				}
-			}
-			
-		}
-
-		/**
-		 * Prints the matches of a specific player
-		 * @param playerId The player ID of the player whose matches will be printed
-		 */
-		@Override
-		public void printMatchesOfPlayer(String playerId) throws TennisDatabaseException {
-			
-			// No players
-			if(m_NumNodes == 0)
-				throw new TennisDatabaseException("There are currently no players in the database.");
-			
-			// No player of ID found
-			else if(!this.containsPlayer(playerId))
-				throw new TennisDatabaseException("There are currently no players of ID " + playerId + " in the database.");
-			
-			else
-			{
-				if(m_EntryPoint.player.equals(playerId))
-				{
-					try
-					{
-						m_EntryPoint.tennisMatches.print();
-					}
-					catch(Exception e)
-					{
-						System.out.println(e.getMessage());
-					}
-				}
-				
-				// Traverse list and print players
-				for(TennisPlayerContainerNode loopNode = m_EntryPoint.next; !loopNode.equals(m_EntryPoint); loopNode = loopNode.next)
-				{
-					if(loopNode.player.equals(playerId))
-					{
-						try
-						{
-							loopNode.tennisMatches.print();
-						}
-						catch(Exception e)
-						{
-							System.out.println(e.getMessage());
-						}
-					}
-				}
-			}
-		}
-		
-		/**
-		 * Nodes for the TennisPlayersContainer linked list
-		 * 
-		 * @author Michael Weger
-		 *
-		 */
-		private class TennisPlayerContainerNode {
-			
-			public TennisPlayerContainerNode next;				// The next node
-			public TennisPlayerContainerNode previous;			// The previous node
-			public TennisPlayer player;							// The player which this node contains
-			public SortedLinkedList<TennisMatch> tennisMatches;	// The linked list of matches in which this nodes player participated in
-			
-			/**
-			 * Constructor
-			 * @param player The player which this node contains
-			 * @param next The next node in the linked list
-			 * @param previous The previous node in the linked list
-			 */
-			public TennisPlayerContainerNode(TennisPlayer player, TennisPlayerContainerNode next, TennisPlayerContainerNode previous)
-			{
-				this.player = player;
-				this.next = next;
-				this.previous = previous;
-				this.tennisMatches = new SortedLinkedList<TennisMatch>();
-			}
-			
-			/**
-			 * Constructor
-			 * @param player The player which this node contains
-			 */
-			public TennisPlayerContainerNode(TennisPlayer player)
-			{
-				this.player = player;
-				this.next = this; 		// As a circular linked list a node with no next or previous nodes must point to itself
-				this.previous = this;
-				this.tennisMatches = new SortedLinkedList<TennisMatch>();
-			}
-		}
-	}
-	
-	/**
-	 * Stores tennis matches in a dynamically sized array
-	 * 
-	 * @author Michael Weger
-	 *
-	 */
-	private class TennisMatchesContainer implements TennisMatchesContainerInterface {
-		
-		// The array which will be manipulated
-		private TennisMatch[] m_Array;
-		
-		// Tracks number of items in the array
-		private int m_PhysicalSize;
-		
-		/**
-		 * Constructor which sets the array to default allocated size 20
-		 */
-		public TennisMatchesContainer()
-		{
-			// Create an array and a variable to track how many items are in the array at any given time
-			m_PhysicalSize = 0;
-			m_Array = new TennisMatch[20];
-		}
-		
-		/**
-		 * Adds a tennis match to the database
-		 * 
-		 * @param match A valid tennis match after passing validity testing from the method in the TennisDatabase class
-		 */
-		public void insertMatch(TennisMatch match) throws TennisDatabaseException
-		{	
-			
-			if(match == null)
-				throw new TennisDatabaseException("Attempted to insert null match into the database.");
-			
-			int index = -1;
-			
-			for(int i = 0; i < m_PhysicalSize; i++)
-			{
-				// Our match date is greater or equal to the one at index i
-				if(match.compareTo(m_Array[i]) >= 1)
-				{
-					index = i;
-					break;
-				}
-			}
-			
-			// Resize the array if there is no room
-			if(m_Array.length < m_PhysicalSize + 1)
-				resizeArray();
-			
-			// No index was found its the new last item
-			if(index == -1)
-				m_Array[m_PhysicalSize] = match;
-			// Otherwise shift the array to the right at the index of insertion
-			else
-				rightShift(index, match);
-			
-			// Increment our array size variable since we have added another match to the array
-			m_PhysicalSize++;
-		}
-		
-		/**
-		 * Prints all matches currently in the database
-		 */
-		public void printAllMatches() throws TennisDatabaseRuntimeException
-		{
-			// Provide feedback to the user if there aren't any matches
-			if(m_PhysicalSize == 0)
-			{
-				throw new TennisDatabaseRuntimeException("There are currently no matches in the database.");
-			}
-			// Print all matches
-			for(TennisMatch m : m_Array)
-			{
-				if(m != null)
-					m.print();
-			}
-		}
-		
-		/**
-		 * Performs a right shift on the array for a match insertion operation
-		 * @param indexOfInsertion The index at which to insert the match
-		 * @param match The match to insert
-		 */
-		private void rightShift(int indexOfInsertion, TennisMatch match)
-		{
-			// Shift all items right of the index of insertion one index to the right
-			for(int i = m_PhysicalSize; i > indexOfInsertion; i--)
-			{
-				m_Array[i] = m_Array[i-1];
-			}
-			
-			// Insert the new item
-			m_Array[indexOfInsertion] = match;
-		}
-		
-		/**
-		 * Allocates twice the amount of memory for the array
-		 */
-		private void resizeArray()
-		{
-			// Create a new array with size n+1 to fit the new item
-			TennisMatch[] resizedArray = new TennisMatch[m_Array.length * 2];
-			
-			// Move all items from the previous array to the new array
-			for(int i = 0; i < m_PhysicalSize; i++)
-			{
-				resizedArray[i] = m_Array[i];
-			}
-			
-			// Set the member variable to the new array for use in other functions
-			m_Array = resizedArray;
-		}
 	}
 }

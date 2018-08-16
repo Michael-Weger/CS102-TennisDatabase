@@ -1,5 +1,6 @@
 package CS102;
 
+import java.io.IOException;
 import java.util.Scanner;
 
 import TennisDatabase.TennisDatabase;
@@ -38,11 +39,21 @@ public class Assignment2 {
 			System.out.println(e.getMessage());
 			System.out.println("");
 		}
+		catch(TennisDatabaseException e)
+		{
+			System.out.println("");
+			System.out.println(e.getMessage());
+			System.out.println("");
+		}
 		catch(ArrayIndexOutOfBoundsException e1)
 		{
 			System.out.println("");
 			System.out.println("No path specified, continuing without loading a data file.");
 			System.out.println("");
+		}
+		catch(Exception e)
+		{
+			
 		}
 		
 		// Display all commands for the user
@@ -54,6 +65,10 @@ public class Assignment2 {
 		System.out.println("!Players		- Displays all players.");
 		System.out.println("!InsertMatch		- Adds a match to the database.");
 		System.out.println("!InsertPlayer		- Adds a player to the database.");
+		System.out.println("!RemovePlayer		- Adds a player to the database.");
+		System.out.println("!Import			- Imports all players and matches from a given file.");
+		System.out.println("!Export			- Exports all players and matches to a given file.");
+		System.out.println("!Clear			- Clears all players and matches from the database.");
 		System.out.println("!Exit			- Terminates the program.");
 		System.out.println("----------------------------------------------------------------------------------------------------");
 		System.out.println("");
@@ -76,9 +91,12 @@ public class Assignment2 {
 					System.out.println("!Players		- Displays all players.");
 					System.out.println("!InsertMatch		- Adds a match to the database.");
 					System.out.println("!InsertPlayer		- Adds a player to the database.");
+					System.out.println("!RemovePlayer		- Adds a player to the database.");
+					System.out.println("!Import			- Imports all players and matches from a given file.");
+					System.out.println("!Export			- Exports all players and matches to a given file.");
+					System.out.println("!Clear			- Clears all players and matches from the database.");
 					System.out.println("!Exit			- Terminates the program.");
 					System.out.println("----------------------------------------------------------------------------------------------------");
-					System.out.println("");
 					break;
 					
 				case("!matches"):
@@ -91,7 +109,6 @@ public class Assignment2 {
 					{
 						System.out.println(e.getMessage());
 					}
-					System.out.println("");
 					break;
 					
 				case("!matchesbyplayer"):
@@ -120,7 +137,6 @@ public class Assignment2 {
 					{
 						System.out.println(e.getMessage());
 					}
-					System.out.println("");
 					break;
 					
 				case("!insertmatch"):
@@ -134,7 +150,10 @@ public class Assignment2 {
 					{
 						System.out.println(e.getMessage());
 					}
-					System.out.println("");
+					catch(Exception e)
+					{
+						System.out.println(e.getMessage());
+					}
 					break;
 					
 				case("!insertplayer"):
@@ -148,7 +167,69 @@ public class Assignment2 {
 					{
 						System.out.println(e.getMessage());
 					}
-					System.out.println("");
+					break;
+					
+				case("!removeplayer"):
+					System.out.println("Enter the 5 character unique ID of the player.");
+					try
+					{
+						s = userScanner.nextLine().toUpperCase();
+						tennisDatabase.removePlayer(s);
+					}
+					catch(TennisDatabaseException e)
+					{
+						System.out.println(e.getMessage());
+					}
+					catch(TennisDatabaseRuntimeException e)
+					{
+						System.out.println(e.getMessage());
+					}
+					break;
+					
+				case("!import"):
+					System.out.println("Please specify a file path.");
+					try
+					{
+						s = userScanner.nextLine();
+						tennisDatabase.readFromFile(s);
+					}
+					catch(TennisDatabaseRuntimeException e)
+					{
+						System.out.println(e.getMessage());
+					}
+					catch(TennisDatabaseException e)
+					{
+						System.out.println(e.getMessage());
+					}
+					catch(Exception e)
+					{
+						System.out.println(e.getMessage());
+					}
+					System.out.println("Import complete.");
+					break;
+					
+				case("!export"):
+					System.out.println("Please specify a file path.");
+					System.out.println("WARNING: All data in the file will be overwritten.");
+					try
+					{
+						s = userScanner.nextLine();
+						tennisDatabase.writeToFile(s);
+					}
+					catch(IOException e)
+					{
+						System.out.println(e.getMessage());
+					}
+					catch(TennisDatabaseRuntimeException e)
+					{
+						System.out.println(e.getMessage());
+					}
+					System.out.println("Export complete.");
+					break;
+					
+				case("!clear"):
+					tennisDatabase.clear();
+					System.out.println("Successfully cleared all data from the database.");
 					break;
 					
 				case("!exit"):
@@ -164,9 +245,9 @@ public class Assignment2 {
 				default:
 					System.out.println("");
 					System.out.println(s + " is an unknown command. use !Help to see a list of commands.");
-					System.out.println("");
 					break;
 			}
+			System.out.println("");
 		}
 	}
 }

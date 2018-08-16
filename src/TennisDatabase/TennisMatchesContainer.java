@@ -61,6 +61,23 @@ class TennisMatchesContainer implements TennisMatchesContainerInterface {
 	}
 	
 	/**
+	 * Removes all matches of a given player from the array
+	 * @param playerId The ID of the given player
+	 */
+	public void removeAllMatchesOfPlayer(String playerId)
+	{
+		Object[] tempArray = m_Array.toArray();
+		for(Object m : tempArray)
+		{
+			if(((TennisMatch) m).hasPlayer(playerId))
+			{
+				m_Array.remove(m);
+				m_PhysicalSize--;
+			}
+		}
+	}
+	
+	/**
 	 * Prints all matches currently in the database
 	 */
 	public void printAllMatches() throws TennisDatabaseRuntimeException
@@ -79,18 +96,30 @@ class TennisMatchesContainer implements TennisMatchesContainerInterface {
 	}
 	
 	/**
+	 * Returns a boolean value based on whether the given match is in the container
+	 * @return Whether or not the match is in the database
+	 */
+	public boolean containsMatch(TennisMatch m)
+	{
+		return m_Array.contains(m);
+	}
+	
+	/**
 	 * Exports the contents of the array to a single condensed string. Each match is its own line.
 	 * @return The condensed string of matches
 	 */
 	public String exportTennisMatches()
 	{
+		if(m_PhysicalSize == 0)
+			return "";
+		
 		String exportStr = "";
 		
 		for(TennisMatch m : m_Array)
 		{
 			String s = "MATCH/" + m.getPlayer1().getPlayerID() + "/" + m.getPlayer2().getPlayerID() + "/" 
 					+ m.getDateYear() + m.getDateMonth() + m.getDateDay() + "/" + m.getTournament() + "/" 
-					+ m.getMatchScore() + "\\n";
+					+ m.getMatchScore() + System.lineSeparator();
 			
 			exportStr += s;
 		}
@@ -99,10 +128,11 @@ class TennisMatchesContainer implements TennisMatchesContainerInterface {
 	}
 	
 	/**
-	 * Clears the arraylist
+	 * Clears the ArrayList
 	 */
-	public void clearArray()
+	public void clear()
 	{
 		m_Array.clear();
+		m_PhysicalSize = 0;
 	}
 }

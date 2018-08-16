@@ -15,6 +15,17 @@ interface TennisMatchesContainerInterface {
    // Output: Throws an exception if there are no matches in this container.
    public void printAllMatches() throws TennisDatabaseRuntimeException;
    
+   // Desc.: Deletes all matches of a given player from the ArrayList.
+   // Input: The id of the tennis player in the match.
+   public void removeAllMatchesOfPlayer( String playerId);
+   
+   // Desc.: Removes all matches from the ArrayList.
+   public void clear();
+   
+   // Desc.: Exports all players from the ArrayList to a condensed string
+   // Output: The condensed string
+   public String exportTennisMatches();
+   
 }
 
 

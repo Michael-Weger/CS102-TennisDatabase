@@ -1,6 +1,6 @@
 package TennisDatabase;
 
-public class SortedLinkedList<T extends Comparable<T>> implements SortedLinkedListInterface<T> {
+class SortedLinkedList<T extends Comparable<T>> implements SortedLinkedListInterface<T> {
 
 	private SortedLinkedListNode<T> m_Head; // The head of the linked list
 	

@@ -10,7 +10,7 @@ interface TennisDatabaseInterface {
 
    // Desc.: Loads data from file following the format described in the specifications.
    // Output: Throws an unchecked (non-critical) exception if the loading is not fully successfull.
-   public void readFromFile( String fileName ) throws TennisDatabaseRuntimeException;
+   public void readFromFile( String fileName ) throws TennisDatabaseRuntimeException, TennisDatabaseException, Exception;
    
    // Desc.: Prints all tennis players in the database to the console (sorted by id, alphabetically).
    // Output: Throws an unchecked (non-critical) exception if there are no players in the database.
@@ -35,7 +35,7 @@ interface TennisDatabaseInterface {
    // Input: All the data required for a tennis match.
    // Output: Throws a checked (critical) exception if a player does not exist in the database.
    //         Throws a checked (critical) exception if the match score is not valid.
-   public void insertMatch( String match, boolean userFeedback ) throws TennisDatabaseException;
+   public void insertMatch( String match, boolean userFeedback ) throws TennisDatabaseException, Exception;
    
 }
 

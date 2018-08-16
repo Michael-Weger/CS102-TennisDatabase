@@ -55,6 +55,9 @@ public class TennisDatabase implements TennisDatabaseInterface {
 		}
 		
 		// Import all valid data from the file
+		if(!scanner.hasNextLine())
+			throw new TennisDatabaseException("The file is empty.");
+		
 		
 		while(scanner.hasNextLine())
 		{
@@ -65,24 +68,25 @@ public class TennisDatabase implements TennisDatabaseInterface {
 			{
 				try
 				{
-					this.insertPlayer(importedData, false);
+					this.insertPlayer(importedData);
 				}
 				catch(TennisDatabaseException e)
 				{
-					System.out.println(e.getMessage());
+					throw e;
 				}
 			}
 		}
+
+		scanner.close();
 		
 		// Resets the position of the file scanner to the top of the file by creating a new instance
 		try 
 		{
-			scanner.close();
 			scanner = new Scanner(dataFile);
 		} 
 		catch (FileNotFoundException e) 
 		{
-			e.printStackTrace();
+			throw new TennisDatabaseRuntimeException("File not found, , continuining without loading any preexisting matches.");
 		}
 		
 		// Add matches now that players have been added to the database
@@ -95,7 +99,7 @@ public class TennisDatabase implements TennisDatabaseInterface {
 			{
 				try
 				{
-					this.insertMatch(importedData, false);
+					this.insertMatch(importedData);
 				}
 				catch(TennisDatabaseException e)
 				{
@@ -115,7 +119,7 @@ public class TennisDatabase implements TennisDatabaseInterface {
 	 * @param fileName The path at which the file can be found (or created)
 	 * @throws IOException
 	 */
-	public void writeToFile(String fileName) throws IOException, TennisDatabaseRuntimeException
+	public void writeToFile(String fileName) throws IOException, TennisDatabaseException
 	{
 		FileWriter writer = null;
 		File dataFile = new File(fileName);
@@ -135,13 +139,13 @@ public class TennisDatabase implements TennisDatabaseInterface {
 		
 		try
 		{
-			String data = m_MatchContainer.exportTennisMatches() + m_PlayerContainer.exportTennisPlayers();
+			String data = m_PlayerContainer.exportTennisPlayers() + m_MatchContainer.exportTennisMatches();
 			writer.write(data);
 		}
-		catch (TennisDatabaseRuntimeException e)
+		catch (TennisDatabaseException e)
 		{
 			writer.close();
-			throw e;
+			throw new TennisDatabaseException("There are no players or matches to export.");
 		}
 		
 		writer.close();
@@ -152,7 +156,7 @@ public class TennisDatabase implements TennisDatabaseInterface {
 	 * @param p The string from which a player will be created
 	 * @param userFeedback a boolean value which determines whether or not to provide system prints to a user.
 	 */
-	public void insertPlayer(String p, boolean userFeedback) throws TennisDatabaseException
+	public void insertPlayer(String p) throws TennisDatabaseException
 	{
 		String[] importedPlayer = p.split("/");
 		
@@ -194,13 +198,10 @@ public class TennisDatabase implements TennisDatabaseInterface {
 			try 
 			{
 				m_PlayerContainer.insertPlayer(new TennisPlayer(p));
-				if(userFeedback)
-					System.out.println("Successfully added player!");
 			} 
 			catch (TennisDatabaseException e) 
 			{
-				if(userFeedback)
-					System.out.println(e.getMessage());
+				throw e;
 			}
 		}
 	}
@@ -217,7 +218,6 @@ public class TennisDatabase implements TennisDatabaseInterface {
 		{
 			m_PlayerContainer.removePlayer(playerId);
 			m_MatchContainer.removeAllMatchesOfPlayer(playerId);
-			System.out.println("Player successfully deleted.");
 		}
 		catch(TennisDatabaseException e)
 		{
@@ -265,6 +265,11 @@ public class TennisDatabase implements TennisDatabaseInterface {
 		}
 	}
 	
+	public void iteratorReverseDebug()
+	{
+		m_PlayerContainer.iteratorReverseDebug();
+	}
+	
 	/**
 	 * Ensures the input string for a match is valid before adding it to the database.
 	 * 
@@ -272,7 +277,7 @@ public class TennisDatabase implements TennisDatabaseInterface {
 	 * @param userFeedback a boolean value which determines whether or not to provide system prints to a user.
 	 * @throws Exception 
 	 */
-	public void insertMatch(String m, boolean userFeedback) throws TennisDatabaseException, Exception
+	public void insertMatch(String m) throws TennisDatabaseException, Exception
 	{
 		String[] importedMatch = m.split("/");
 		
@@ -353,14 +358,10 @@ public class TennisDatabase implements TennisDatabaseInterface {
 					{
 						throw e;
 					}
-					
-					if(userFeedback)
-						System.out.println("Match successfully added.");
 				} 
 				catch (TennisDatabaseException e) 
 				{
-					if(userFeedback)
-						System.out.println(e.getMessage());
+					throw e;
 				}
 			}
 		}
@@ -384,10 +385,17 @@ public class TennisDatabase implements TennisDatabaseInterface {
 	/**
 	 * Removes all players and matches from the database
 	 */
-	public void clear()
+	public void clear() throws TennisDatabaseException
 	{
-		m_MatchContainer.clear();
-		m_PlayerContainer.clear();
+		try
+		{
+			m_MatchContainer.clear();
+			m_PlayerContainer.clear();
+		}
+		catch(TennisDatabaseException e)
+		{
+			throw e;
+		}
 	}
 	
 	/**

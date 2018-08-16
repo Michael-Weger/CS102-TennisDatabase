@@ -40,18 +40,18 @@ interface TennisPlayersContainerInterface {
    public void removePlayer( String playerId) throws TennisDatabaseException, TennisDatabaseRuntimeException;
    
    // Desc.: Removes all players from the tree.
-   public void clear();
+   // Output: Throws a checked (critical) exception if the container is already empty.
+   public void clear() throws TennisDatabaseException;
    
-   // Desc.: Creates a TennisPlayersContainerIterator object with the specified order
-   // Input: The specified order
+   // Desc.: Creates a TennisPlayersContainerIterator object
    // Output: The TennisPlayersContainerIterator
    @SuppressWarnings("rawtypes")
-   public TennisPlayersContainerIterator iterator(boolean inorder);
+   public TennisPlayersContainerIterator iterator();
    
    // Desc.: Exports all players from the tree (preorder) to a condensed string.
    // Output: The condensed string.
-   // 		  Throws an unchecked (non-critical) exception if there are no tennis players in the tree.
-   public String exportTennisPlayers() throws TennisDatabaseRuntimeException;
+   // 		  Throws a checked (critical) exception if there are no tennis players in the tree.
+   public String exportTennisPlayers() throws TennisDatabaseException;
    
 }
 

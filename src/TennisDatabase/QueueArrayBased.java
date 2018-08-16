@@ -13,7 +13,6 @@ class QueueArrayBased<T> implements QueueArrayBasedInterface<T>
 	private int m_InsertionOffset;	// The offset from the front at which new items will be inserted
 	private int m_PhysicalSize;		// The number of items in the array
 	
-	@SuppressWarnings("unchecked")
 	public QueueArrayBased(int size)
 	{
 		m_Array = (T[]) new Object[size];
@@ -26,7 +25,6 @@ class QueueArrayBased<T> implements QueueArrayBasedInterface<T>
 	 * Adds a given item to the queue at the index of insertion. Resizes the array to size 2n if the array is full.
 	 * @param data The given item to insert.
 	 */
-	@SuppressWarnings("unchecked")
 	public void enqueue(Object data) throws NullPointerException
 	{
 		if(data == null)
@@ -35,6 +33,7 @@ class QueueArrayBased<T> implements QueueArrayBasedInterface<T>
 		if(m_Array.length < m_PhysicalSize + 1)
 			resizeArray();
 		
+		// Sends our insertion point back to the front of the array
 		if(m_QueueFront + m_InsertionOffset > m_Array.length - 1)
 			m_InsertionOffset = 0 - m_QueueFront;
 		
@@ -57,6 +56,7 @@ class QueueArrayBased<T> implements QueueArrayBasedInterface<T>
 			T dequeuedItem = m_Array[m_QueueFront];
 			m_Array[m_QueueFront] = null;
 			
+			// Update variables to keep track of where to enqueue and dequeue from
 			m_PhysicalSize--;
 			m_InsertionOffset--;
 			m_QueueFront++;
@@ -94,7 +94,6 @@ class QueueArrayBased<T> implements QueueArrayBasedInterface<T>
 	 */
 	private void resizeArray()
 	{
-		@SuppressWarnings("unchecked")
 		T[] resizedArray = (T[]) new Object[m_Array.length * 2];
 		
 		for(int i = 0; i < m_Array.length; i++)

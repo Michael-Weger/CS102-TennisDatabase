@@ -28,8 +28,8 @@ public class TennisPlayer implements TennisPlayerInterface {
 		m_PlayerID 	= player[1];
 		m_FirstName = player[2];
 		m_LastName 	= player[3];
-		m_Country 	= player[4];
-		m_BirthYear = player[5];
+		m_BirthYear = player[4];
+		m_Country 	= player[5];
 	}
 	
 	/**
@@ -41,8 +41,8 @@ public class TennisPlayer implements TennisPlayerInterface {
 		m_PlayerID 	= player[0];
 		m_FirstName = player[1];
 		m_LastName 	= player[2];
-		m_Country 	= player[3];
-		m_BirthYear = player[4];
+		m_BirthYear = player[3];
+		m_Country 	= player[4];
 	}
 	
 	/**
@@ -146,7 +146,7 @@ public class TennisPlayer implements TennisPlayerInterface {
 	 */
 	public String toString()
 	{
-		return m_PlayerID + ", " + getFullName() + ", " +  m_Country + ", " +  m_BirthYear + ", " + getWinLossRatio();
+		return m_PlayerID + ", " + getFullName() + ", " +  m_BirthYear + ", "  + m_Country + ", " + getWinLossRatio();
 	}
 	
 	/**

@@ -92,6 +92,14 @@ public class TennisMatch implements TennisMatchInterface {
 	}
 	
 	/**
+	 * @return Returns the year in which this match took place.
+	 */
+	public String getDateYearString()
+	{
+		return this.m_Date.getYear();
+	}
+	
+	/**
 	 * @return Returns the month in which this match took place.
 	 */
 	public int getDateMonth()
@@ -100,11 +108,27 @@ public class TennisMatch implements TennisMatchInterface {
 	}
 	
 	/**
+	 * @return Returns the month in which this match took place.
+	 */
+	public String getDateMonthString()
+	{
+		return this.m_Date.getMonth();
+	}
+	
+	/**
 	 * @return Returns the day on which this match took place.
 	 */
 	public int getDateDay()
 	{
 		return this.m_Date.getDayNumeric();
+	}
+	
+	/**
+	 * @return Returns the day on which this match took place.
+	 */
+	public String getDateDayString()
+	{
+		return this.m_Date.getDay();
 	}
 	
 	/**

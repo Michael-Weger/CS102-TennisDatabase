@@ -1,6 +1,5 @@
 package TennisDatabase;
 
-import TennisDatabase.QueueArrayBased;
 import TennisDatabase.TennisDatabaseException;
 import TennisDatabase.TennisDatabaseRuntimeException;
 import TennisDatabase.TennisMatch;
@@ -136,19 +135,22 @@ class TennisPlayersContainer implements TennisPlayersContainerInterface {
 	 * Prints all players currently in the BST
 	 * @exception TennisDatabaseRuntimeException
 	 */
-	public void printAllPlayers() throws TennisDatabaseRuntimeException 
+	public void printAllPlayers() throws TennisDatabaseRuntimeException
 	{
 		if(m_Root == null)
 			throw new TennisDatabaseRuntimeException("No players are currently in the database.");
 		
-		TennisPlayersContainerIterator<TennisPlayersContainerNode> iterator = this.iterator();
+		TennisPlayersContainerIterator iterator = this.iterator();
+		iterator.setInorder();
 		
 		// Print a blank line for a clean look in the UI.
 		// This is printed here to avoid a blank line when an exception is thrown.
 		System.out.println("");
 		
 		while(iterator.hasNext())
-			iterator.next().data.player.print();
+		{
+			iterator.next().player.print();
+		}
 	}
 
 	/**
@@ -178,13 +180,46 @@ class TennisPlayersContainer implements TennisPlayersContainerInterface {
 			}
 			catch(TennisDatabaseRuntimeException e)
 			{
-				throw new TennisDatabaseRuntimeException("The specified player ID is invalid.");
+				throw new TennisDatabaseRuntimeException("The specified player ID is invalid or has no matches in the database.");
 			}
 			catch(TennisDatabaseException e)
 			{
 				throw new TennisDatabaseException("The specified player does not exist in the database.");
 			}
 		}
+	}
+	
+	/**
+	 * Removes a list of matches from the database.
+	 * @param matches The list of matches to remove
+	 * @throws TennisDatabaseRuntimeException
+	 * @throws TennisDatabaseException
+	 */
+	private void removeMatches(SortedLinkedList<TennisMatch> matches) throws TennisDatabaseRuntimeException, TennisDatabaseException
+	{
+		for(TennisMatch m : matches.getAllAsList())
+		{
+			try 
+			{
+				String player1Id = m.getPlayer1().getPlayerID();
+				String player2Id = m.getPlayer2().getPlayerID();
+				
+				try 
+				{
+					this.binarySearch(m_Root, player1Id).data.tennisMatches.removeItem(m);
+					this.binarySearch(m_Root, player2Id).data.tennisMatches.removeItem(m);
+				} 
+				catch (TennisDatabaseRuntimeException | TennisDatabaseException e) 
+				{
+					throw e;
+				}
+			} 
+			catch (TennisDatabaseException | TennisDatabaseRuntimeException e) 
+			{
+				throw e;
+			}
+		}
+		
 	}
 	
 	/**
@@ -218,7 +253,7 @@ class TennisPlayersContainer implements TennisPlayersContainerInterface {
 	 * @return The current root of the recursive function in order to update the previous root.
 	 * @throws TennisDatabaseRuntimeException
 	 */
-	private TennisPlayersContainerNode removePlayerRecursive(TennisPlayersContainerNode currentRoot, String playerId) throws TennisDatabaseRuntimeException
+	private TennisPlayersContainerNode removePlayerRecursive(TennisPlayersContainerNode currentRoot, String playerId) throws TennisDatabaseException, TennisDatabaseRuntimeException
 	{
 		if(currentRoot == null)
 			throw new TennisDatabaseRuntimeException("The specified player could not be found in the database.");
@@ -243,21 +278,26 @@ class TennisPlayersContainer implements TennisPlayersContainerInterface {
 			// No children
 			if(currentRoot.leftChild == null && currentRoot.rightChild == null)
 			{
+				removeMatches(currentRoot.data.tennisMatches);
 				currentRoot = null;
 			}
 			// No right children
 			else if(currentRoot.rightChild == null)
 			{
+				removeMatches(currentRoot.data.tennisMatches);
 				currentRoot = currentRoot.leftChild;
 			}
 			// No left children
 			else if(currentRoot.leftChild == null)
 			{
+				removeMatches(currentRoot.data.tennisMatches);
 				currentRoot = currentRoot.rightChild;
 			}
 			// Restructure the tree
 			else
 			{
+				removeMatches(currentRoot.data.tennisMatches);
+				
 				// Find the lowest value in the right subtree
 				currentRoot.data = findLowestValue(currentRoot.rightChild);
 				
@@ -346,35 +386,21 @@ class TennisPlayersContainer implements TennisPlayersContainerInterface {
 	 */
 	public String exportTennisPlayers() throws TennisDatabaseException
 	{
-		if(m_Root == null)
-			throw new TennisDatabaseException("There are no players to export.");
+		TennisPlayersContainerIterator iterator = this.iterator();
+		iterator.setPreorder();
 		
-		else
-			return exportTennisPlayersRecursive(m_Root, "");
-	}
-	
-	/**
-	 * Supporting recursive function which traverses the tree (breadth-first) to create and return a condensed string.
-	 * @param currentRoot The current root of the recursive function.
-	 * @param s The condensed string.
-	 * @return The condensed string.
-	 */
-	private String exportTennisPlayersRecursive(TennisPlayersContainerNode currentRoot, String s)
-	{
-		if(currentRoot != null)
+		String appendString = "";
+		TennisPlayer p;
+		
+		while(iterator.hasNext())
 		{
-			TennisPlayer p = currentRoot.data.player;
-			String appendString = "";
-			
-			// Appends players in preorder format (Node, Left, Right)
-			appendString = "PLAYER/" + p.getPlayerID() + "/" + p.getFirstName() + "/" + p.getLastName() + "/" 
-							+ p.getBirthYear() + "/" + p.getCountry() + System.lineSeparator();
-			
-			appendString += exportTennisPlayersRecursive(currentRoot.leftChild, s);
-			return appendString += exportTennisPlayersRecursive(currentRoot.rightChild, s);
+			p = iterator.next().player;
+				
+			appendString += "PLAYER/" + p.getPlayerID() + "/" + p.getFirstName() + "/" + p.getLastName() + "/" 
+					+ p.getBirthYear() + "/" + p.getCountry() + System.lineSeparator();
 		}
-		else
-			return "";
+		
+		return appendString;
 	}
 	
 	/**
@@ -393,40 +419,9 @@ class TennisPlayersContainer implements TennisPlayersContainerInterface {
 	 * Creates an iterator for this container capable of inorder or reverse inorder traversal.
 	 * @return The iterator.
 	 */
-	public TennisPlayersContainerIterator<TennisPlayersContainerNode> iterator()
+	public TennisPlayersContainerIterator iterator()
 	{
-		QueueArrayBased<TennisPlayersContainerNode> queue = new QueueArrayBased<TennisPlayersContainerNode>(20);
-		iteratorRecursive(m_Root, queue);
-		return new TennisPlayersContainerIterator<TennisPlayersContainerNode>(queue);
-	}
-	
-	/**
-	 * Supporting class which adds all players inorder to the iterator's queue.
-	 * @param currentRoot The current root of the recursive function.
-	 * @param queue The queue which is having items added to it.
-	 */
-	private void iteratorRecursive(TennisPlayersContainerNode currentRoot, QueueArrayBased<TennisPlayersContainerNode> queue)
-	{
-		if(currentRoot == null)
-			return;
-		else
-		{
-			// inorder format (Left, Root, Right)
-			iteratorRecursive(currentRoot.leftChild, queue);
-			queue.enqueue(currentRoot);
-			iteratorRecursive(currentRoot.rightChild, queue);
-		}
-	}
-	
-	public void iteratorReverseDebug()
-	{
-		if(m_Root == null)
-			throw new TennisDatabaseRuntimeException("No players are currently in the database.");
-		
-		TennisPlayersContainerIterator<TennisPlayersContainerNode> iterator = this.iterator();
-		
-		while(iterator.hasNextReverse())
-			iterator.nextReverse().data.player.print();
+		return new TennisPlayersContainerIterator(m_Root);
 	}
 	
 	/**
@@ -463,7 +458,7 @@ class TennisPlayersContainer implements TennisPlayersContainerInterface {
 	 * @author Michael Weger
 	 *
 	 */
-	private class TennisPlayersContainerNode {
+	class TennisPlayersContainerNode {
 		
 		public TennisPlayersContainerNode rightChild;	// The right node
 		public TennisPlayersContainerNode leftChild;		// The left node
@@ -487,7 +482,7 @@ class TennisPlayersContainer implements TennisPlayersContainerInterface {
 	 * @author Michael Weger
 	 *
 	 */
-	private class NodeData {
+	class NodeData {
 		
 		public TennisPlayer player;
 		public SortedLinkedList<TennisMatch> tennisMatches;

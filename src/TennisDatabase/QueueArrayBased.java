@@ -13,6 +13,7 @@ class QueueArrayBased<T> implements QueueArrayBasedInterface<T>
 	private int m_InsertionOffset;	// The offset from the front at which new items will be inserted
 	private int m_PhysicalSize;		// The number of items in the array
 	
+	@SuppressWarnings("unchecked")
 	public QueueArrayBased(int size)
 	{
 		m_Array = (T[]) new Object[size];
@@ -25,6 +26,7 @@ class QueueArrayBased<T> implements QueueArrayBasedInterface<T>
 	 * Adds a given item to the queue at the index of insertion. Resizes the array to size 2n if the array is full.
 	 * @param data The given item to insert.
 	 */
+	@SuppressWarnings("unchecked")
 	public void enqueue(Object data) throws NullPointerException
 	{
 		if(data == null)
@@ -69,6 +71,17 @@ class QueueArrayBased<T> implements QueueArrayBasedInterface<T>
 	}
 	
 	/**
+	 * Removes all items from the queue
+	 */
+	public void dequeueAll()
+	{
+		while(!this.isEmpty())
+		{
+			this.dequeue();
+		}
+	}
+	
+	/**
 	 * Returns the item at the front of the queue. Will return null if the queue is empty.
 	 * @return The item at the front of the queue.
 	 */
@@ -90,15 +103,26 @@ class QueueArrayBased<T> implements QueueArrayBasedInterface<T>
 	}
 	
 	/**
+	 * Returns whether or not the queue has no items
+	 * @return whether or not the queue has no items
+	 */
+	public boolean isEmpty()
+	{
+		return m_PhysicalSize == 0;
+	}
+	
+	/**
 	 * Resizes the array to be size 2n.
 	 */
+	@SuppressWarnings("unchecked")
 	private void resizeArray()
 	{
 		T[] resizedArray = (T[]) new Object[m_Array.length * 2];
 		
 		for(int i = 0; i < m_Array.length; i++)
-			resizedArray[i] = m_Array[i];
+			resizedArray[i] = m_Array[(m_QueueFront + i) % m_Array.length];
 		
 		m_Array = resizedArray;
+		m_QueueFront = 0;
 	}
 }

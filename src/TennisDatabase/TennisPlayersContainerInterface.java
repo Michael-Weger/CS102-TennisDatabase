@@ -43,9 +43,8 @@ interface TennisPlayersContainerInterface {
    // Output: Throws a checked (critical) exception if the container is already empty.
    public void clear() throws TennisDatabaseException;
    
-   // Desc.: Creates a TennisPlayersContainerIterator object
-   // Output: The TennisPlayersContainerIterator
-   @SuppressWarnings("rawtypes")
+   // Desc.: Creates a TennisPlayersContainerIterator object.
+   // Output: The TennisPlayersContainerIterator.
    public TennisPlayersContainerIterator iterator();
    
    // Desc.: Exports all players from the tree (preorder) to a condensed string.

@@ -3,35 +3,28 @@ package TennisDatabase;
 import java.util.Iterator;
 import java.util.Stack;
 
+import TennisDatabase.TennisPlayersContainer.NodeData;
+import TennisDatabase.TennisPlayersContainer.TennisPlayersContainerNode;
+
 /**
  * An iterator designed to work forward or backward.
  * 
  * @author Michael Weger
- *
- * @param <T> The type this iterator will use
  */
-class TennisPlayersContainerIterator<T> implements Iterator<T>
+class TennisPlayersContainerIterator implements Iterator<NodeData>
 {
-	private QueueArrayBased<T> m_Queue;	// The Queue which stores all items in forward order.
-	private Stack<T> m_Stack;			// The Stack which stores all items in reverse order.
+	private TennisPlayersContainerNode m_Root; 	// The root of the PlayersContainer.
+	private QueueArrayBased<NodeData> m_Queue;	// The Queue which stores all items inorder.
+	private Stack<NodeData> m_Stack;			// A stack which is used to simplify the reverse inorder traversal.
 
-	public TennisPlayersContainerIterator(QueueArrayBased<T> queue)
+	TennisPlayersContainerIterator(TennisPlayersContainerNode root)
 	{
-		T frontItem = queue.peek();
-		m_Stack = new Stack<T>();
+		m_Root = root;
+		m_Queue = new QueueArrayBased<NodeData>(20);
+		m_Stack = new Stack<NodeData>();
 		
-		// Move all items from the queue to the stack starting with the first one.
-		// Keep re-adding the items to preserve the queue once a full iteration is complete.
-		queue.enqueue(queue.peek());
-		m_Stack.push(queue.dequeue());
-		
-		while(queue.peek() != frontItem)
-		{
-			queue.enqueue(queue.peek());
-			m_Stack.push(queue.dequeue());
-		}
-		
-		m_Queue = queue;
+		// Default to inorder sorting.
+		this.setInorder();
 	}
 	
 	/*
@@ -40,16 +33,23 @@ class TennisPlayersContainerIterator<T> implements Iterator<T>
 	 */
 	public boolean hasNext() 
 	{
-		return m_Queue.size() > 0;
+		return !m_Queue.isEmpty();
 	}
 
 	/*
 	 * (non-Javadoc)
 	 * @see java.util.Iterator#next()
 	 */
-	public T next() 
+	public NodeData next() throws NullPointerException
 	{
-		return m_Queue.dequeue();
+		try
+		{
+			return m_Queue.dequeue();
+		}
+		catch(NullPointerException e)
+		{
+			throw e;
+		}
 	}
 	
 	/*
@@ -58,34 +58,90 @@ class TennisPlayersContainerIterator<T> implements Iterator<T>
 	 */
 	public void remove()
 	{
-		m_Queue.dequeue();
+		try
+		{
+			m_Queue.dequeue();
+		}
+		catch(NullPointerException e)
+		{
+			throw e;
+		}
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see java.util.Iterator#hasNext()
+	/**
+	 * Sets up the queue to have all elements of the PlayersContainer sorted inorder
 	 */
-	public boolean hasNextReverse()
+	public void setInorder()
 	{
-		return m_Stack.size() > 0;
+		m_Queue.dequeueAll();
+		setInorderRecursive(m_Root);
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see java.util.Iterator#next()
+	/**
+	 * Recursive supporting class which traverses the PlayerContainer to set the queue sorted inorder
+	 * @param currentRoot The current root of the recursive function
 	 */
-	public T nextReverse()
+	private void setInorderRecursive(TennisPlayersContainerNode currentRoot)
 	{
-		return m_Stack.pop();
+		if(currentRoot == null)
+			return;
+	
+		setInorderRecursive(currentRoot.leftChild);
+		m_Queue.enqueue(currentRoot.data);
+		setInorderRecursive(currentRoot.rightChild);
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see java.util.Iterator#remove()
+	/**
+	 * Sets up the queue to have all elements of the PlayersContainer sorted reverse inorder
 	 */
-	public void removeReverse()
+	public void setReverseInorder()
 	{
-		m_Stack.pop();
+		m_Stack.clear();
+		
+		setReverseInorderRecursive(m_Root);
+		
+		m_Queue.dequeueAll();
+		
+		while(!m_Stack.isEmpty())
+		{
+			m_Queue.enqueue(m_Stack.pop());
+		}
 	}
+	
+	/**
+	 * Recursive supporting class which traverses the PlayerContainer to set the queue sorted reverse inorder
+	 * @param currentRoot The current root of the recursive function
+	 */
+	private void setReverseInorderRecursive(TennisPlayersContainerNode currentRoot)
+	{
+		if(currentRoot == null)
+			return;
+		
+		setReverseInorderRecursive(currentRoot.leftChild);
+		m_Stack.push(currentRoot.data);
+		setReverseInorderRecursive(currentRoot.rightChild);
+	}
+	
+	/**
+	 * Sets up the queue to have all elements of the PlayersContainer sorted inorder
+	 */
+	public void setPreorder()
+	{
+		m_Queue.dequeueAll();
+		setPreorderRecursive(m_Root);
+	}
+	
+	/**
+	 * Recursive supporting class which traverses the PlayerContainer to set the queue sorted preorder
+	 * @param currentRoot The current root of the recursive function
+	 */
+	private void setPreorderRecursive(TennisPlayersContainerNode currentRoot)
+	{
+		if(currentRoot == null)
+			return;
 
+		m_Queue.enqueue(currentRoot.data);
+		setPreorderRecursive(currentRoot.leftChild);
+		setPreorderRecursive(currentRoot.rightChild);
+	}
 }

@@ -265,11 +265,6 @@ public class TennisDatabase implements TennisDatabaseInterface {
 		}
 	}
 	
-	public void iteratorReverseDebug()
-	{
-		m_PlayerContainer.iteratorReverseDebug();
-	}
-	
 	/**
 	 * Ensures the input string for a match is valid before adding it to the database.
 	 * 

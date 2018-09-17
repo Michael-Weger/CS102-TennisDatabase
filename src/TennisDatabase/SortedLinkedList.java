@@ -1,5 +1,8 @@
 package TennisDatabase;
 
+import java.util.ArrayList;
+import java.util.List;
+
 class SortedLinkedList<T extends Comparable<T>> implements SortedLinkedListInterface<T> {
 
 	private SortedLinkedListNode<T> m_Head; // The head of the linked list
@@ -77,6 +80,64 @@ class SortedLinkedList<T extends Comparable<T>> implements SortedLinkedListInter
 				System.out.println(loopNode.data);
 			}
 		}
+	}
+	
+	/**
+	 * Removes a node of specified data from the linked list.
+	 * @param data The specified data.
+	 */
+	public void removeItem(T data)
+	{
+		// Empty list
+		if(m_Head == null)
+		{
+		throw new RuntimeException("No items in list!");
+		}
+		// Traverse list and find the node with the specified data
+		else
+		{
+			SortedLinkedListNode<T> lastNode = m_Head;
+			
+			if(m_Head.data.equals(data))
+				m_Head = m_Head.next;
+			
+			else
+				for(SortedLinkedListNode<T> loopNode = m_Head; loopNode != null; loopNode = loopNode.next)
+				{
+					if(loopNode.data.equals(data))
+					{
+						lastNode.next = loopNode.next;
+						break;
+					}
+					
+					lastNode = loopNode;
+				}
+		}
+	}
+	
+	/**
+	 * Returns this linked list as a list in order
+	 * @return A list of this linked lists node's data
+	 */
+	public List<T> getAllAsList()
+	{
+		List<T> returnList = new ArrayList<T>();
+		
+		// Empty list
+		if(m_Head == null)
+		{
+			throw new RuntimeException("No items in list!");
+		}
+		// Traverse list and find the node with the specified data
+		else
+		{
+			for(SortedLinkedListNode<T> loopNode = m_Head; loopNode != null; loopNode = loopNode.next)
+			{
+				returnList.add(loopNode.data);
+			}
+		}
+		
+		return returnList;
 	}
 
 	/**
